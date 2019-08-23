@@ -248,9 +248,17 @@ class Article:
     def url(self):
         return self.link
     
+    @url.setter
+    def url(self, text):
+        self.link = text
+    
     @property
     def title(self):
         return self.name
+    
+    @title.setter
+    def title(self, text):
+        self.name = text
     
     @property
     def month_text(self):
@@ -278,13 +286,17 @@ class Category:
             print('Ctrl+C pressed, add category cancelled')
 
     @classmethod
-    def from_sqlalchemy(cls, category):
+    def from_sqlalchemy(cls, categoryID, category_name):
         """
         Takes a RowProxy from sqlalchemy and returns an Article object. The argument
         names are the row names from the sqlalchemy database. These vary slightly
         from the attributes of the article object.
         """
-        return cls(categoryID=category.categoryID, category_name=category.category_name, articles=None)
+        return cls(CategoryID=categoryID, category_name=category_name, articles=None)
+    
+    @property
+    def name(self):
+        return self.category_name
 
 #class App(object):
 #    @classmethod

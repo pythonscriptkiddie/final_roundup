@@ -9,7 +9,7 @@
 import test_db2 as db
 #import _db.test_dal2 as dal
 from objects import Article, Category
-import roundup_docx as roundup_docx
+import roundup_docx2 as roundup_docx
 import BTCInput as btc
 import operator
 import time
@@ -193,90 +193,95 @@ def add_article_from_newspaper(link):
     '''
     Adds an article from the newspaper module after downloading it
     '''
+   # try:
+    #link = btc.read_text('Link or "." to cancel: ')
+    #try:
+    for i in tqdm.tqdm(range(1)):
+        newNewsItem = na.get_article_from_url(link)
+    print(newNewsItem)
+    #except Exception as e:
+        #print(e)
+        #get article title
     try:
-        #link = btc.read_text('Link or "." to cancel: ')
-        #try:
-        for i in tqdm.tqdm(range(1)):
-            newNewsItem = na.get_article_from_url(link)
-        print(newNewsItem)
-        #except Exception as e:
-            #print(e)
-            #get article title
-        try:
-            name = newNewsItem.title #get the title for the article
-            print('NameTest {0}'.format(name))
-        except Exception as e:
-            print(e)
-            name = btc.read_text('Please enter title: ')
-            #get article author
-        try:
-            author = ' '.join(newNewsItem.authors)
-            #get article publication
-        except Exception as e:
-            print(e)
-            author = btc.read_text('Please enter author: ')
-        try:
-            #works for most websites, but not Sudan Tribune
-            publication = newNewsItem.meta_data['og']['site_name']
-        except Exception as e:
-            print(e)
-            publication = btc.read_text('Please enter publication: ')
-        try:
-            year = newNewsItem.publish_date.year
-        except Exception as e:
-            print(e)
-            year = btc.read_int_ranged('Please enter year: ', 1, 2200)
-        try:
-            month = newNewsItem.publish_date.month
-        except Exception as e:
-            print(e)
-            month = btc.read_int_ranged('Please enter month: ', 1, 12)
-        try:
-            day = newNewsItem.publish_date.day
-        except Exception as e:
-            print(e)
-            day = btc.read_int_ranged('Please enter day: ', 1, 31)
-        try:
-            summary = newNewsItem.summary
-        except Exception as e:
-            print(e)
-            print('Summary download failed')
-            summary = 'Summary not found'
-        try:
-            keywords = ', '.join(newNewsItem.keywords)
-        except Exception as e:
-            print(e)
-            print('Keyword download failed')
-            keywords= 'keywords not found'
-        print('TITLE - {0} - AUTHOR {1}'.format(name, author))
-        print('DATE - {0}/{1}/{2} - PUBLICATION {3}'.format(month, day, year, publication))
-        #print(author)
-        #print(publication)
-        #print('{0}/{1}/{2}'.format(month, day, year))
-        #print(summary)
-        print('KEYWORDS: ', keywords)
-        display_categories()
-        category_id = btc.read_text("Category ID: ")
-        category = db.get_category(category_id)
-        if category == None:
-            print('There is no category with that ID. article NOT added.\n')
-            return
-        description_choice = btc.read_text('View article description? y/n: ')
-        if description_choice == 'y':
-            print('Title: {0}'.format(name))
-            print('Summary: {0}'.format(summary))
-            print('Keywords: {0}'.format(keywords))
-        description = btc.read_text("Description or '.' to cancel: ")
-        if description == ".":
-            return
-        else:
-            article = Article(name=name, year=year, month=month,day=day,
-                      category=category, link=link, description=description,
-                      author=author, publication=publication)
-        db.add_article(article)    
-        print(name + " was added to database.\n")
+        name = newNewsItem.title #get the title for the article
+        print('NameTest {0}'.format(name))
     except Exception as e:
-        print('Article download failed.', e)
+        print(e)
+        name = btc.read_text('Please enter title: ')
+        #get article author
+    try:
+        author = ' '.join(newNewsItem.authors)
+        #get article publication
+    except Exception as e:
+        print(e)
+        author = btc.read_text('Please enter author: ')
+    try:
+        #works for most websites, but not Sudan Tribune
+        publication = newNewsItem.meta_data['og']['site_name']
+    except Exception as e:
+        print(e)
+        publication = btc.read_text('Please enter publication: ')
+    try:
+        year = newNewsItem.publish_date.year
+    except Exception as e:
+        print(e)
+        year = btc.read_int_ranged('Please enter year: ', 1, 2200)
+    try:
+        month = newNewsItem.publish_date.month
+    except Exception as e:
+        print(e)
+        month = btc.read_int_ranged('Please enter month: ', 1, 12)
+    try:
+        day = newNewsItem.publish_date.day
+    except Exception as e:
+        print(e)
+        day = btc.read_int_ranged('Please enter day: ', 1, 31)
+    try:
+        new_date = datetime.date(day=day, month=month, year=year)
+    except Exception as e:
+        print('invalid date')
+    try:
+        summary = newNewsItem.summary
+    except Exception as e:
+        print(e)
+        print('Summary download failed')
+        summary = 'Summary not found'
+    try:
+        keywords = ', '.join(newNewsItem.keywords)
+    except Exception as e:
+        print(e)
+        print('Keyword download failed')
+        keywords= 'keywords not found'
+    print('TITLE - {0} - AUTHOR {1}'.format(name, author))
+    print('DATE - {0}/{1}/{2} - PUBLICATION {3}'.format(month, day, year, publication))
+    #print(author)
+    #print(publication)
+    #print('{0}/{1}/{2}'.format(month, day, year))
+    #print(summary)
+    print('KEYWORDS: ', keywords)
+    display_categories()
+    category_id = btc.read_text("Category ID: ")
+    category = db.get_category(category_id)
+    if category == None:
+        print('There is no category with that ID. article NOT added.\n')
+        return
+    description_choice = btc.read_text('View article description? y/n: ')
+    if description_choice == 'y':
+        print('Title: {0}'.format(name))
+        print('Summary: {0}'.format(summary))
+        print('Keywords: {0}'.format(keywords))
+    description = btc.read_text("Description or '.' to cancel: ")
+    
+    if description == ".":
+        return
+    else:
+        article = Article(name=name, date=new_date,
+                  category=category, link=link, description=description,
+                  author=author, publication=publication)
+    db.add_article(article)    
+    print(name + " was added to database.\n")
+    #except Exception as e:
+    #    print('Article download failed.', e)
     #new_article = Article(link=)
     #print('Article download failed. Return to main menu.')
 
@@ -727,7 +732,7 @@ def export_roundup_by_date():
     end_date = end_date.date()
     print('start date: ', start_date, 'end date: ', end_date)
     print('start date type:', type(start_date), 'end date type:', type(end_date))
-    return
+    #return
     #roundup_month = btc.read_int_ranged('Enter roundup month: ', 1, 12)
     #roundup_year = btc.read_int_ranged('Enter roundup year: ', 1, 2100)
     filename = btc.read_text('Enter roundup filename: ')
@@ -736,7 +741,8 @@ def export_roundup_by_date():
         roundup_categories = db.get_categories()
         for category in roundup_categories:
             #category.articles = db.get_articles_for_roundup(roundup_month, roundup_year, category.id)
-            category.articles = db.get_articles_for_roundup(start_date, end_date, category.categoryID)
+            category.articles = db.get_articles_for_roundup(start_date, end_date, category.CategoryID)
+            print(len(category.articles))
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
         #display_title()
     elif roundup_choice == 2:

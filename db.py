@@ -99,10 +99,9 @@ def get_article(article_id):
 def get_category(category_id):
     #returns a single category
     s = select([categories_table.c.categoryID,
-        categories_table.c.name]).where(categories_table.c.categoryID == category_id)
+        categories_table.c.category_name]).where(categories_table.c.categoryID == category_id)
     rp = connection.execute(s).fetchone()
     try:
-        #new_category = tuple(rp)[0] #take the single element out of nested tuple
         new_category = make_category(rp)
         return new_category
     except Exception as e:
