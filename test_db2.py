@@ -12,6 +12,7 @@ from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         CheckConstraint, insert, select, update, and_, or_, not_)
 
 from objects import Article, Category
+from sqlalchemy.sql import delete, func
 connection=False
 
 def connect():
@@ -78,6 +79,13 @@ def add_article(article):
             publication = article.publication
             )
     result = connection.execute(ins)
+    print(result.rowcount)
+    
+def add_category(category):
+    category_name = category.name #takes a category object, so we have to get the name
+    ins = categories_table.insert().values(category_name=category_name)
+    result = connection.execute(ins)
+    print(result.rowcount)
 
 #READING SECTION - read/get articles and categories
     
@@ -101,8 +109,11 @@ def get_article(article_id):
                                               publication=rp.publication)
         return new_article
     except TypeError:
+        print('Type error')
         return
-    
+    except AttributeError:
+        print('Attribute error')
+        return
 
 def get_categories():
     s = select([categories_table.c.categoryID, categories_table.c.category_name])
@@ -155,8 +166,62 @@ def get_articles_for_roundup(start_date, end_date, category_id):
         
     return new_articles
 
+def get_articles_by_category_id(category_id):
+    s = select([articles_table]).where(articles_table.c.categoryID == category_id)
+    rp = connection.execute(s)
+    articles_by_category = [make_article(i) for i in rp]
+    return articles_by_category
+
 
 #UPDATE SECTION - Update articles and categories
+
+def update_article_name(article_id, new_article_name):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(name=new_article_name)
+    result = connection.execute(u)
+    print(result.rowcount)
+
+def update_article_description(article_id, new_description):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(description=new_description)
+    result = connection.execute(u)
+    print(result.rowcount)
+    
+def update_article_author(article_id, new_author):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(author=new_author)
+    result = connection.execute(u)
+    print(result.rowcount)
+    
+def update_article_publication(article_id, new_publication):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(publication = new_publication)
+    result = connection.execute(u)
+    print(result.rowcount)
+    
+def update_article_category(article_id, new_category):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(categoryID=new_category)
+    result = connection.execute(u)
+    print(result.rowcount)
+
+def update_article_date(article_id, new_date):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(date=new_date)
+    result = connection.execute(u)
+    print(result.rowcount)
+
+#DELETE SECTION - Delete articles and categories
+    
+def delete_article(article_id):
+    u = delete(articles_table).where(articles_table.c.articleID == article_id)
+    result = connection.execute(u)
+    print(result.rowcount)
+    
+def delete_category(category_id):
+    u = delete(categories_table).where(categories_table.c.categoryID == category_id)
+    result = connection.execute(u)
+    print(result.rowcount)
 
 if __name__ == '__main__':
     connect()

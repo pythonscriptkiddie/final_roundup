@@ -68,7 +68,7 @@ def display_articles(articles, title_term):
     print(line_format.format("ID", "Name", "Category", 'Date', "Description","Link"))
     print("-" * 155)
     for article in articles:
-        print(line_format.format(str(article.id), article.name.lstrip()[:50],
+        print(line_format.format(str(article.ArticleID), article.name.lstrip()[:50],
                                  article.category.category_name[:10], article.date_string,
                                  article.description[:35], article.link[:35]))                          
     print()
@@ -177,7 +177,7 @@ def display_articles_by_author():
         print("There are no articles by that author. article NOT found.\n")
     else:
         print()
-        #display_single_article(article, str(article.id))
+        #display_single_article(article, str(article.ArticleID))
         display_articles(articles, "AUTHOR: " + str(articles[0].author))
 
 def display_articles_by_publication():
@@ -314,7 +314,7 @@ def update_article_name(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article title, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -349,12 +349,13 @@ def update_article_category(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article category, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
             new_category_id = btc.read_int('Enter new category_id: ')
             result = db.get_category(new_category_id)
+            #Add in some text that is displayed to make it clear that the category is being updated
             if result == None:
                 print('There is no category with that ID, article category NOT updated.\n')
             else:
@@ -368,7 +369,7 @@ def update_article_description(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -398,7 +399,7 @@ def update_article_author(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article author, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -414,7 +415,7 @@ def update_article_publication(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article publication, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -431,17 +432,22 @@ def update_article_date(article_id):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to edit article date, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
-            new_day = btc.read_int_ranged('Enter new day: ', min_value = 1, max_value = 31)
-            new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
-            new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
-            date_choice = btc.read_int_ranged('1 to change date to: {0}/{1}/{2}, 2 to cancel: '.format(new_month, new_day, new_year),
+            new_date = btc.read_text('Enter new date:' )
+            new_date = parse(new_date)
+            new_date_format = new_date.date()
+            #new_date = datetime.date(new_date)
+            print(type(new_date))
+            #new_day = btc.read_int_ranged('Enter new day: ', min_value = 1, max_value = 31)
+            #new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
+            #new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
+            date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date_format),
                                               min_value=1, max_value=2)
             if date_choice == 1:
-                db.update_article_date(article_id, new_day, new_month, new_year)
+                db.update_article_date(article_id, new_date)
                 print('Update complete.\n')
             elif date_choice == 2:
                 print('Edit cancelled, article date unchanged')
@@ -454,7 +460,7 @@ def scrape_article_name(article_id):
         print('There is no article with that ID. article NOT found.\n')
     else:
         print()
-        display_single_article(article, str(article.id))
+        display_single_article(article, str(article.ArticleID))
         article_choice = btc.read_int_ranged('1 to rescrape title, 2 to leave as is: ',
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -484,7 +490,7 @@ def finalize_article_descriptions(month, year=2019):
     print('{0} undescribed articles'.format(undescribed_articles))
     for article in undescribed:
         print('{0} undescribed articles'.format(undescribed_articles))
-        update_article_description(article.id)
+        update_article_description(article.ArticleID)
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
         if description_choice == 2:
             print('Update descriptions cancelled')
@@ -500,7 +506,7 @@ def finalize_desc_month(command):
          for article in articles_to_finalize:
              print('{0} unreviewed articles'.format(articles_remaining))
              
-             update_article_description(article.id)
+             update_article_description(article.ArticleID)
              description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
                                                       1, 2)
              
@@ -515,10 +521,10 @@ def finalize_title_updates(month, year):
     articles_remaining = len(articles)
     for article in articles:
         print('{0} articles remaining'.format(articles_remaining))
-        display_single_article(article, title_term = article.id)
+        display_single_article(article, title_term = article.ArticleID)
         strip_choice = btc.read_int_ranged('1 to update title, 2 to skip, 3 to return to main menu: ', 1, 3)
         if strip_choice == 1:
-            update_article_name(article.id)
+            update_article_name(article.ArticleID)
             articles_remaining -= 1
         if strip_choice == 2:
             articles_remaining -= 1

@@ -205,7 +205,6 @@ class Article:
             name = read_text('Article title: ')
             new_date = read_text('Article date: ')
             new_date = parse(new_date)
-            assert datetime.date(new_date)
             #assert Article.validate_date(day=day,month=month,year=year) == True
             author = read_text('Author: ')
             publication = read_text('Publication: ')
