@@ -8,7 +8,7 @@
 #from _db.objects import Article, Category
 import test_db2 as db
 #import _db.test_dal2 as dal
-#from _db.objects import Article, Category
+from objects import Article, Category
 import roundup_docx as roundup_docx
 import BTCInput as btc
 import operator
@@ -20,6 +20,7 @@ import sys
 import news_article as na
 import datetime
 import tqdm
+from dateutil.parser import parse
 #from dateutil.parser import parse
 #import warnings
 
@@ -36,9 +37,11 @@ def display_menu(title, menu_items, end='   '):
 def display_categories(command=''):
     del command
     print("CATEGORIES")
-    categories = db.get_categories()    
+    categories = db.get_categories()  
     for category in categories:
-        print(str(category.id) + ". " + category.name.strip(), end='   ')
+        #print(category)
+    #for category in categories:
+        print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
     print()
 
 def display_single_article2(article, title_term=''):
@@ -54,7 +57,7 @@ AUTHOR: {2}\tPUBLICATION: {3}'''
     print("-" * 155)
     template2 = "Category: {0}\nDate: {1}\nDescription: {2}\nLink: {3}"
 
-    print(template2.format(article.category.name, article.date_string,
+    print(template2.format(article.category.category_name, article.date_string,
                                  article.description, article.link))  
     print()
 
@@ -66,7 +69,7 @@ def display_articles(articles, title_term):
     print("-" * 155)
     for article in articles:
         print(line_format.format(str(article.id), article.name.lstrip()[:50],
-                                 article.category.name[:10], article.date_string,
+                                 article.category.category_name[:10], article.date_string,
                                  article.description[:35], article.link[:35]))                          
     print()
 
@@ -88,7 +91,7 @@ def display_articles_by_category_id(category_id):
     else:
         print()
         articles = db.get_articles_by_category_id(category_id)
-        display_articles(articles, category.name.upper())
+        display_articles(articles, category.category_name.upper())
         print('Total articles: {0}'.format(db.get_article_count(category_id)))
 
 def display_articles_by_category_name(category_snippet):
@@ -99,7 +102,7 @@ def display_articles_by_category_name(category_snippet):
         print()
         search_category_id = search_category.id
         articles = db.get_articles_by_category_id(search_category_id)
-        display_articles(articles, search_category.name.upper())
+        display_articles(articles, search_category.category_name.upper())
  
 def date_search_interface(command):
     date_commands = {'day': 1,
@@ -524,7 +527,7 @@ def finalize_title_updates(month, year):
 def get_monthly_category_stats(month, year):
     categories = db.get_categories()
     total_articles = len(db.get_articles_by_month(month, year))
-    category_ids = [[category.id, category.name, db.get_monthly_article_count(category.id, month, year)] for category in categories]
+    category_ids = [[category.id, category.category_name, db.get_monthly_article_count(category.id, month, year)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
     uncategorized_articles = db.display_articles_by_description('Not specified')
     uncategorized_articles = len(uncategorized_articles)
@@ -549,7 +552,7 @@ def get_monthly_category_stats(month, year):
 def get_yearly_category_stats(year):
     categories = db.get_categories()
     total_articles = len(db.get_articles_by_year(year))
-    category_ids = [[category.id, category.name, db.get_yearly_article_count(category.id, year)] for category in categories]
+    category_ids = [[category.CategoryID, category.category_name, db.get_yearly_article_count(category.id, year)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
     uncategorized_articles = db.display_articles_by_description('Not specified')
     uncategorized_articles = len(uncategorized_articles)
@@ -673,7 +676,7 @@ def delete_article(article_id):
 
 def add_category():
     new_category = Category.from_input()
-    if new_category.name != '.':
+    if new_category.category_name != '.':
         db.add_category(new_category)
 
         
@@ -682,7 +685,7 @@ def update_category(category_id=0):
         category_id = int(input("category ID: "))
     category = db.get_category(category_id)
     articles = db.get_articles_by_category_id(category_id)
-    display_articles(articles, category.name.upper())
+    display_articles(articles, category.category_name.upper())
     new_category_name = btc.read_text("Enter new category name or '.' to cancel: ")
     if new_category_name != '.':
         update_choice = btc.read_int_ranged("1 to change article name to {0}, 2 to cancel: ".format(new_category_name),
@@ -715,16 +718,25 @@ def export_roundup():
             category.articles = db.get_articles_by_category_id(category.id)
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
         
-def export_roundup_by_month():
+def export_roundup_by_date():
     roundup_title = btc.read_text('Enter the roundup title: ')
-    roundup_month = btc.read_int_ranged('Enter roundup month: ', 1, 12)
-    roundup_year = btc.read_int_ranged('Enter roundup year: ', 1, 2100)
+    start_date = parse(btc.read_text('Enter the starting date: '))
+    start_date = start_date.date()
+    #start_date = parse(start_date)
+    end_date = parse(btc.read_text('Enter the ending date: '))
+    end_date = end_date.date()
+    print('start date: ', start_date, 'end date: ', end_date)
+    print('start date type:', type(start_date), 'end date type:', type(end_date))
+    return
+    #roundup_month = btc.read_int_ranged('Enter roundup month: ', 1, 12)
+    #roundup_year = btc.read_int_ranged('Enter roundup year: ', 1, 2100)
     filename = btc.read_text('Enter roundup filename: ')
     roundup_choice = btc.read_int_ranged('Enter 1 to export roundup, 2 to cancel: ', 1, 2)
     if roundup_choice == 1:
         roundup_categories = db.get_categories()
         for category in roundup_categories:
-            category.articles = db.get_articles_for_roundup(roundup_month, roundup_year, category.id)
+            #category.articles = db.get_articles_for_roundup(roundup_month, roundup_year, category.id)
+            category.articles = db.get_articles_for_roundup(start_date, end_date, category.categoryID)
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
         #display_title()
     elif roundup_choice == 2:
@@ -753,7 +765,7 @@ def export_roundup_by_category():
     categories_for_roundup = []
     for category in roundup_categories:
         print('Categories remaining: {0}'.format(categories_remaining))
-        print('Include {0}'.format(category.name))
+        print('Include {0}'.format(category.category_name))
         category_choice = btc.read_int_ranged('1 to include, 2 to exclude: ', 1, 2)
         if category_choice != 1:
             categories_for_roundup.append(category)
@@ -832,7 +844,7 @@ def category_interface(command):
 
 
 def export_interface(command):
-    export_commands = {'month': export_roundup_by_month, 'category' : export_roundup_by_category}
+    export_commands = {'date': export_roundup_by_date, 'category' : export_roundup_by_category}
     
     if not command:
         print('Enter command')

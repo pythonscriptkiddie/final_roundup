@@ -9,8 +9,7 @@ Created on Thu Aug 15 20:39:38 2019
 from datetime import datetime, date
 from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         DateTime, Date, ForeignKey, Boolean, create_engine,
-                        CheckConstraint, insert, select, update, between,
-                        startswith)
+                        CheckConstraint, insert, select, update, and_, or_, not_)
 
 from objects import Article, Category
 connection=False
@@ -41,7 +40,10 @@ def close():
     if connection:
         connection.close()
         print('database connection closed successfully')
-        
+
+def make_category(row):
+    #print(row[0], row[1])
+    return Category(row[0], row[1])
     
 def get_article(article_id):
     print(articles_table.c.articleID)
@@ -64,6 +66,29 @@ def get_article(article_id):
         return new_article
     except TypeError:
         return
+    
+def get_categories2():
+    s = select([categories_table.c.categoryID, categories_table.c.category_name])
+    rp = connection.execute(s)
+    for i in rp:
+        print(i, type(i))
+    
+    categories_collection = [make_category(category) for category in rp]
+    print(categories_collection)
+    return categories_collection
+
+def get_categories():
+    s = select([categories_table.c.categoryID, categories_table.c.category_name])
+    rp = connection.execute(s)
+    categories_collection=[]
+    for i in rp:
+        #print(i, type(i))
+        t = make_category(i)
+        categories_collection.append(t)
+    return categories_collection
+    
+#Select statement for choosing articles by month   
+#s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= date(2019, 6, 1), articles_table.c.date >= date(2019, 6, 30)))
 
 #metadata = MetaData()
 

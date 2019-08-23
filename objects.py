@@ -260,7 +260,7 @@ class Article:
 class Category:
     
     CategoryID: int = id
-    name: str = None
+    category_name: str = None
     articles: Any = None
     
     @classmethod
@@ -270,12 +270,21 @@ class Category:
             print('Press "." to cancel')
             name = read_text('Category name: ')
             #description = read_text('Description: ')
-            return cls(name=name)
+            return cls(category_name=name)
         except Exception as e:
             print(e)
             return
         except KeyboardInterrupt:
             print('Ctrl+C pressed, add category cancelled')
+
+    @classmethod
+    def from_sqlalchemy(cls, category):
+        """
+        Takes a RowProxy from sqlalchemy and returns an Article object. The argument
+        names are the row names from the sqlalchemy database. These vary slightly
+        from the attributes of the article object.
+        """
+        return cls(categoryID=category.categoryID, category_name=category.category_name, articles=None)
 
 #class App(object):
 #    @classmethod
