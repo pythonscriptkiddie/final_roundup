@@ -104,62 +104,31 @@ def display_articles_by_category_name(category_snippet):
         articles = db.get_articles_by_category_id(search_category_id)
         display_articles(articles, search_category.category_name.upper())
  
-def date_search_interface(command):
-    date_commands = {'day': 1,
-                       'month': 2,
-                       'year': 3
-                       }
-    
-    if not command:
-        print('search_date must be followed by one of these arguments')
-        print('year, month, day')
-        print('eg. search_date day searches by day, menu will prompt for date')
+def search_single_date(article_date):
+    article_date = parse(article_date)
+    new_date = article_date.date()
+    print(type(new_date))
+    if article_date == None:
+        print('Date entered incorrectly')
     else:
-        try:
-            date_search(date_commands[command])
-            #command=date_commands[command]()
-        except KeyError:
-            print('Invalid suffix for category menu')
-    
-def date_search(search_choice):
-    #search_choice = btc.read_int_ranged('Options:\n1 - day\n2 - month\n3 - year\n4 - cancel\nEnter your choice: ', 1, 4)
-    if search_choice in range(1, 4): #user searches by year
-        year = btc.read_int('Year: ')
-        if search_choice in range(1, 3):
-            month = btc.read_int('Month: ')
-            if search_choice in range(1, 2):
-                day = btc.read_int('Day: ')
-                try:
-                    assert datetime.date(day=day, month=month, year = year)
-                    display_articles_by_date(year, month, day)
-                except ValueError:
-                    print('Invalid date. Return to main menu.')
-                    return
-                #if Article.validate_date(day=day, month=month, year=year) == True:
-                    #display_articles_by_date(year, month, day)
-                #else:
-                 #   print('Invalid date selected')
-            else:
-                display_articles_by_month(month, year)
-        else:
-            display_articles_by_year(year)
-    else:
-        print('Search cancelled. ')
-    
-      
-def display_articles_by_year(year):
-    print()
-    articles = db.get_articles_by_year(year)
-    display_articles(articles, str(year))
-
-def display_articles_by_month(month, year):
-    print()
-    articles = db.get_articles_by_month(month, year)
-    display_articles(articles, "MONTH: " + str(month))
-    
-def display_articles_by_date(year, month, day):
-    articles = db.get_articles_by_date(day, month, year)
-    display_articles(articles, "DATE: {0}/{1}/{2}".format(month, day, year))
+        articles = db.get_articles_by_date(new_date)
+        formatted_date = article_date.strftime("%m/%d/%Y")
+        #print(articles)
+        display_articles(articles, formatted_date)
+        
+def search_date_range(command=''):
+    start_date = btc.read_text('Enter state date: ')
+    end_date = btc.read_text('Enter end date: ')
+    try:
+        start_date = parse(start_date)
+        end_date = parse(end_date)
+    except Exception as e:
+        print(e)
+        return
+    articles = db.get_articles_by_date_range(start_date, end_date)
+    start_date_formatted = start_date.date()
+    end_date_formatted = end_date.date()
+    display_articles(articles, str('{0} {1}'.format(start_date_formatted, end_date_formatted)))    
     
 def display_article_by_id():
     article_id = input("Article ID: ")
@@ -239,7 +208,7 @@ def add_article_from_newspaper(link):
     try:
         new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
-        print('invalid date')
+        print('invalid date', e)
     try:
         summary = newNewsItem.summary
     except Exception as e:
@@ -911,15 +880,25 @@ search author - search by author
 search category - search by category''')
             
     def do_search_date(self, command):
-        date_search_interface(command=command)
+        #date_search_interface(date=command)
+        search_single_date(command)
         
     def help_search_date(command):
-        print('Enter search_date [command]')
-        print('Options:')
-        print('search_date year (search by year)')
-        print('search_date month (search by month)')
-        print('search_date day (search by day)')
+        print('Enter search_date [date]')
+        print('e.g.:')
+        print('search_date 05/02/2019')
+        print('search_date month 06/14/2019')
         
+    def do_search_date_range(self, command):
+        if not command:
+            search_date_range()
+        else:
+            print('Incorrect suffix for date range')
+    
+    def help_search_date_range(self, command):
+        print('Enter search_date_range without any suffix')
+        print('A prompt will appear on screen')
+        print('allowing entry of start and ending dates')
 #    def do_add(self, command):
 #        add_article_interface(command)
         
