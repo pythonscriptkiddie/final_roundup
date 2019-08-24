@@ -148,19 +148,6 @@ def get_articles_by_date_range(start_date, end_date):
     #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
     rp = connection.execute(s).fetchall()
     articles_by_date = [make_article(row) for row in rp]
-    #for i in rp:
-        #print(i)
-    #a#rticles_by_date = [Article.from_sqlalchemy(i) for i in rp]
-    #return articles_by_date
-#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
-#                                              name=rp.name, date=rp.date, 
-#                                              link=rp.link,
-#                                              description=rp.description,
-#                                              author=rp.author,
-#                                              categoryID = rp.categoryID,
-#                                              category_name = rp.category_name,
-#                                              publication=rp.publication)
-#        articles_by_date.append(new_article)
     return articles_by_date
 
 def get_categories():

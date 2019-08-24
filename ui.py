@@ -1091,7 +1091,5 @@ def main():
     db.connect()
     app = RGenCMD().cmdloop()
     
-    
-    
 if __name__ == '__main__':
     main()
