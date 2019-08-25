@@ -201,6 +201,43 @@ def get_articles_for_roundup(start_date, end_date, category_id):
         
     return new_articles
 
+def display_article_by_name(title_snippet):
+    '''
+    This function is intended to facilitate the search for articles using partial titles
+    '''
+    stmt = select([articles_table]).\
+    where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
+    
+    rp = connection.execute(stmt).fetchone()
+    try:
+        article_by_name = make_article(rp)
+        return article_by_name
+    except Exception as e:
+        print(e)
+        return
+    
+def get_articles_by_name(title_snippet):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
+    #articles_by_name = [make_article(row) for row in rp]
+    #return articles_by_name
+
 def get_articles_by_category_id(category_id):
     s = select([articles_table]).where(articles_table.c.categoryID == category_id)
     rp = connection.execute(s)

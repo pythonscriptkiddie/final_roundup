@@ -146,6 +146,7 @@ def display_article_by_name(title_snippet):
     '''
     This function is intended to facilitate the search for articles using partial titles
     '''
+    columns = 
     stmt = select([articles_table]).\
     where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
     
@@ -389,15 +390,18 @@ def add_category(category):
     category_name = category.name #takes a category object, so we have to get the name
     ins = categories_table.insert().values(name=category_name)
     result = connection.execute(ins)
+    print(result.rowcount)
     
 def update_category(category_id, new_category_name):
     u = update(categories_table).where(categories_table.c.categoryID == category_id)
     u = u.values(name=new_category_name)
     result = connection.execute(u)
+    print(result.rowcount)
 
 def delete_category(category_id):
     u = delete(categories_table).where(categories_table.c.categoryID == category_id)
     result = connection.execute(u)
+    print(result.rowcount)
 
  
 if __name__ == '__main__':

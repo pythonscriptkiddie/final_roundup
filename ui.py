@@ -76,11 +76,12 @@ def display_articles(articles, title_term):
 def display_articles_by_name():
     title_snippet = btc.read_text('Enter article title or "." to cancel: ')
     if title_snippet != '.':
-        result = db.display_article_by_name(title_snippet)
-        if result == None:
+        #result = db.display_article_by_name(title_snippet)
+        results = db.get_articles_by_name(title_snippet)
+        if results == None:
             print('There is no article with that name.\n')
         else:
-            display_single_article(result, str(result.id))
+            display_articles(results, str('Results for {0}'.format(title_snippet)))
     else:
         print('Search cancelled, returning to main menu.')
 
@@ -718,21 +719,6 @@ def export_roundup_by_date():
             #category.articles = db.get_articles_for_roundup(roundup_month, roundup_year, category.id)
             category.articles = db.get_articles_for_roundup(start_date, end_date, category.CategoryID)
             print(len(category.articles))
-        roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
-        #display_title()
-    elif roundup_choice == 2:
-        print('Roundup export cancelled. Return to main menu.\n')
-        #display_title()
-        
-def export_roundup_by_year():
-    roundup_title = btc.read_text('Enter the roundup title: ')
-    roundup_year = btc.read_int_ranged('Enter roundup year: ', 1, 2100)
-    filename = btc.read_text('Enter roundup filename: ')
-    roundup_choice = btc.read_int_ranged('Enter 1 to export roundup, 2 to cancel: ', 1, 2)
-    if roundup_choice == 1:
-        roundup_categories = db.get_categories()
-        for category in roundup_categories:
-            category.articles = db.yearly_roundup_articles(roundup_year, category.id)
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
         #display_title()
     elif roundup_choice == 2:
