@@ -235,6 +235,30 @@ def get_articles_by_name(title_snippet):
                                                   publication=i.publication)
         articles_by_name.append(new_article)
     return articles_by_name
+
+def display_articles_by_description(description_snippet):
+    '''
+    This function is intended to display articles based on partial article
+    descriptions.
+    '''
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
     #articles_by_name = [make_article(row) for row in rp]
     #return articles_by_name
 
@@ -243,6 +267,14 @@ def get_articles_by_category_id(category_id):
     rp = connection.execute(s)
     articles_by_category = [make_article(i) for i in rp]
     return articles_by_category
+
+def get_date_range_article_count(category_id, start_date, end_date):
+    s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
+              articles_table.c.date >= start_date, articles_table.c.date <= end_date))
+    rp = connection.execute(s)
+    record = rp.first()
+    #print(record.count_1)
+    return record.count_1
 
 
 #UPDATE SECTION - Update articles and categories

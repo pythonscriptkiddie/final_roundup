@@ -504,6 +504,37 @@ def finalize_title_updates(month, year):
             #display_title()
             break
             
+def get_date_range_category_stats(start_date, end_date):
+    '''
+    The roundups must have at least a few articles in each category. This
+    function gets the stats for the categories between a start date and an
+    end date input by the user.
+    '''
+    categories = db.get_categories()
+    total_articles = len(db.get_articles_by_date_range(start_date, end_date))
+    category_ids = [[category.CategoryID, category.category_name,
+                     db.get_date_range_article_count(category.CategoryID,
+                                                  start_date, end_date)] for category in categories]
+    category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
+    uncategorized_articles = db.display_articles_by_description('Not specified')
+    uncategorized_articles = len(uncategorized_articles)
+    try:
+        percent_incomplete = (uncategorized_articles/total_articles)*100
+        total_articles_completed = 100
+        percent_incomplete = total_articles_completed - percent_incomplete
+        print('CATEGORY STATS')
+        print('-'*64)
+        line_format = '{0:<3} {1:11s} \t{2:10}'
+        print('{0:<3} {1:11s} {2:10}'.format('ID', 'Name', '\tQty.'))
+        print('-'*64)
+        for item in category_ids:
+            print(line_format.format(item[0], item[1], str(item[2])))
+        print('-'*64)
+        print('Uncategorized Articles: {0} (Completed: {1} percent)'.format(uncategorized_articles, percent_incomplete))
+        print('Total Articles: {0}'.format(total_articles))
+    except ZeroDivisionError as e:
+        print(e)
+        return
 
 def get_monthly_category_stats(month, year):
     categories = db.get_categories()
@@ -824,19 +855,16 @@ def export_interface(command):
 
 def get_stats(command):
     del command
-    stats_choice = btc.read_int_ranged('1 - monthly stats; 2 - yearly stats; 3 - main menu: ',
-                                       1, 3)
-    if stats_choice in range(1, 3):
-        year = btc.read_int_ranged('Enter article year: ', 1, 2100)
-        if stats_choice in range(1, 2):
-            month = btc.read_int_ranged('Enter article month: ', 1, 12)
-            get_monthly_category_stats(month, year)
-        else:
-            get_yearly_category_stats(year)
-    else:
-        time.sleep(0.25)
-        print('Returning to main menu.\n')
-        time.sleep(0.25)
+    print('Get stats between two dates')
+    start_date = btc.read_text('Enter start date: ')
+    end_date = btc.read_text('Enter end date: ')
+    try:
+        start_date = parse(start_date)
+        end_date = parse(end_date)
+        get_date_range_category_stats(start_date, end_date)
+    except Exception as e:
+        print(e)
+        return
     
 def split_command(command):
     if type(command) != int:
