@@ -85,24 +85,25 @@ def display_articles_by_name():
     else:
         print('Search cancelled, returning to main menu.')
 
-def display_articles_by_category_id(category_id):
+def display_articles_by_category_id(category_id, start_date, end_date):
     category = db.get_category(category_id)
     if category == None:
         print("There is no category with that ID.\n")
     else:
         print()
-        articles = db.get_articles_by_category_id(category_id)
+        articles = db.display_articles_by_category_id(start_date, end_date, category_id)
+        print('Number of articles:', len(articles))
         display_articles(articles, category.category_name.upper())
-        print('Total articles: {0}'.format(db.get_article_count(category_id)))
+        print('Total articles: {0}'.format(db.get_date_range_article_count(category_id, start_date, end_date)))
 
-def display_articles_by_category_name(category_snippet):
+def display_articles_by_category_name(category_snippet, start_date, end_date):
     search_category = db.get_category_by_name(category_snippet)
     if search_category == None:
         print('There is no category with that ID.\n')
     else:
         print()
-        search_category_id = search_category.id
-        articles = db.get_articles_by_category_id(search_category_id)
+        #search_category_id = search_category.CategoryID
+        articles = db.display_articles_by_category_name(start_date, end_date, category_snippet)
         display_articles(articles, search_category.category_name.upper())
  
 def search_single_date(article_date):
@@ -535,56 +536,6 @@ def get_date_range_category_stats(start_date, end_date):
     except ZeroDivisionError as e:
         print(e)
         return
-
-def get_monthly_category_stats(month, year):
-    categories = db.get_categories()
-    total_articles = len(db.get_articles_by_month(month, year))
-    category_ids = [[category.id, category.category_name, db.get_monthly_article_count(category.id, month, year)] for category in categories]
-    category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
-    uncategorized_articles = db.display_articles_by_description('Not specified')
-    uncategorized_articles = len(uncategorized_articles)
-    try:
-        percent_incomplete = (uncategorized_articles/total_articles)*100
-        total_articles_completed = 100
-        percent_incomplete = total_articles_completed - percent_incomplete
-        print('CATEGORY STATS')
-        print('-'*64)
-        line_format = '{0:<3} {1:11s} \t{2:10}'
-        print('{0:<3} {1:11s} {2:10}'.format('ID', 'Name', '\tQty.'))
-        print('-'*64)
-        for item in category_ids:
-            print(line_format.format(item[0], item[1], str(item[2])))
-        print('-'*64)
-        print('Uncategorized Articles: {0} (Completed: {1} percent)'.format(uncategorized_articles, percent_incomplete))
-        print('Total Articles: {0}'.format(total_articles))
-    except ZeroDivisionError as e:
-        print(e)
-        return
-
-def get_yearly_category_stats(year):
-    categories = db.get_categories()
-    total_articles = len(db.get_articles_by_year(year))
-    category_ids = [[category.CategoryID, category.category_name, db.get_yearly_article_count(category.id, year)] for category in categories]
-    category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
-    uncategorized_articles = db.display_articles_by_description('Not specified')
-    uncategorized_articles = len(uncategorized_articles)
-    try:
-        percent_incomplete = (uncategorized_articles/total_articles)*100
-        total_articles_completed = 100
-        percent_incomplete = total_articles_completed - percent_incomplete
-        print('CATEGORY STATS - {0}'.format(year))
-        print('-'*64)
-        line_format = '{0:<3} {1:11s} \t{2:10}'
-        print('{0:<3} {1:11s} {2:10}'.format('ID', 'Name', '\tQty.'))
-        print('-'*64)
-        for item in category_ids:
-            print(line_format.format(item[0], item[1], str(item[2])))
-        print('-'*64)
-        print('Uncategorized Articles: {0} (Completed: {1} percent)'.format(uncategorized_articles, percent_incomplete))
-        print('Total Articles: {0}'.format(total_articles))
-    except ZeroDivisionError as e:
-        print(e)
-        return
     
 def get_category_id(category_name):
     '''Takes the category name and returns the category ID'''
@@ -809,15 +760,21 @@ def search_article_interface(command):
 
 def get_articles_by_category():
     category = btc.read_text("Enter category name or number here:  ")
+    start_date = btc.read_text("Enter starting date: ")
+    end_date = btc.read_text("Enter ending date: ")
+    start_date = parse(start_date)
+    end_date = parse(end_date)
     if category.isalpha() == True:
-        display_articles_by_category_name(category)
+        print('category name detected')
+        display_articles_by_category_name(category, start_date, end_date)
     elif category.isnumeric() == True:
-        try:
-            category_id = int(category)
-            display_articles_by_category_id(category_id)
+        print('numeric category ID detected')
+        #try:
+            #category_id = int(category)
+        display_articles_by_category_id(category, start_date, end_date)
             
-        except:
-            print('Article search cancelled. Return to main menu.\n')
+        #except:
+            #print('Article search cancelled. Return to main menu.\n')
          
 
 
