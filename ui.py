@@ -875,7 +875,8 @@ search category - search by category''')
         
     def do_import_from_csv(self, command):
         del command
-        get_csv_in_directory()
+        print('import function temporarily disabled')
+        #get_csv_in_directory()
     
     def help_import_from_csv(self):
         print('''Import articles from a CSV file. import_from_csv is entered
@@ -889,9 +890,9 @@ without any suffix''')
 #        print('user will be prompted to supply category and description')
         
     def help_add(self):
-        print('''Enter add [option] to add articles:
-add new - takes input and creates a new article
-add import - imports articles from a csv file''')
+        print('''Enter add [link] to add articles:
+add [link] creates an article from [link] using the newspaper module''')
+#add import - imports articles from a csv file''')
         
     def do_manual_add(self, command):
         manual_add(link=command)
@@ -947,16 +948,16 @@ will return to the main menu.
         print('udartdate [article_id] updates the date of an article')
         print('The function calls a prompt for the user to enter the date')
         
-    def do_finalize_titles(self, command):
-        try:
-            command = split_command(command)
-            finalize_title_updates(month=command[0], year=command[1])
-        except TypeError:
-            print('finalize_titles entered incorrectly')
-    
-    def help_finalize_titles(self):
-        print('finalize_titles [month]')
-        print('updates all the articles from that month')
+#    def do_finalize_titles(self, command):
+#        try:
+#            command = split_command(command)
+#            finalize_title_updates(month=command[0], year=command[1])
+#        except TypeError:
+#            print('finalize_titles entered incorrectly')
+#    
+#    def help_finalize_titles(self):
+#        print('finalize_titles [month]')
+#        print('updates all the articles from that month')
         
     def do_delete_article(self, command):
         delete_article(article_id=command)
@@ -997,12 +998,12 @@ will return to the main menu.
         print('finalize [month], [year]')
         print('finalize 6 2019 : finalizes the June 2019 articles')
         
-    def do_review_desc(self, command):
-        finalize_desc_month(command)
+    #def do_review_desc(self, command):
+     #   finalize_desc_month(command)
         
-    def help_review_desc(self, command):
-        print('review_desc does not take a suffix')
-        print('review the descriptions of each article and make changes')
+    #def help_review_desc(self, command):
+       # print('review_desc does not take a suffix')
+      #  print('review the descriptions of each article and make changes')
         
     def do_export(self, command):
         export_interface(command)
