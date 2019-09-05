@@ -470,22 +470,22 @@ def finalize_article_descriptions(month, year=2019):
 #add function to finalize articles for one month
 def finalize_desc_month(command):
     if not command or command == '':
-         new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
-         new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
-         articles_to_finalize = db.get_articles_by_month(month=new_month, year=new_year)
-         articles_remaining = len(articles_to_finalize)
-         for article in articles_to_finalize:
-             print('{0} unreviewed articles'.format(articles_remaining))
-             
-             update_article_description(article.ArticleID)
-             description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
-                                                      1, 2)
-             
-             articles_remaining -= 1
-             if description_choice == 2:
-                 print('Update descriptions cancelled')
-                 break
-        
+        new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
+        new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
+        articles_to_finalize = db.get_articles_by_month(month=new_month, year=new_year)
+        articles_remaining = len(articles_to_finalize)
+        for article in articles_to_finalize:
+            print('{0} unreviewed articles'.format(articles_remaining))
+            
+            update_article_description(article.ArticleID)
+            description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
+                                                     1, 2)
+            
+            articles_remaining -= 1
+            if description_choice == 2:
+                print('Update descriptions cancelled')
+                break
+
         
 def finalize_title_updates(month, year):
     articles = db.get_articles_by_month(month=month, year=year)
@@ -517,7 +517,7 @@ def get_date_range_category_stats(start_date, end_date):
                      db.get_date_range_article_count(category.CategoryID,
                                                   start_date, end_date)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
-    uncategorized_articles = db.display_articles_by_description('Not specified')
+    uncategorized_articles = db.get_date_range_undescribed_articles('Not specified', start_date, end_date)
     uncategorized_articles = len(uncategorized_articles)
     try:
         percent_incomplete = (uncategorized_articles/total_articles)*100
@@ -603,8 +603,8 @@ def csv_item_to_article(csv_list_item):
     new_article_day = csv_list_item[3]
     new_article_year = csv_list_item[4]
 
-    article_from_csv = Article(name=new_article_title,link=new_article_link, category=new_article_category, year=new_article_year, month=new_article_month,
-                               day=new_article_day, description='Not specified', author='Not specified', publication='Not specified')
+    article_from_csv = Article(name=new_article_title,link=new_article_link, category=new_article_category, date=datetime.date(year=new_article_year, month=new_article_month,
+                               day=new_article_day), description='Not specified', author='Not specified', publication='Not specified')
     return article_from_csv
     
     
@@ -1015,10 +1015,6 @@ export category - export roundup by category
 export month - export roundup by month
 export finalize - finalize title stripping
 export finish_desc - finish article descriptions''')
-        
-#    def do_get_help(self, command):
-#        '''Will probably deprecate this command later on'''
-#        display_title(command)
         
     def do_display_categories(self, command):
         display_categories(command)
