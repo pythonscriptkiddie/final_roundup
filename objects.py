@@ -287,7 +287,7 @@ class Category:
     @classmethod
     def from_sqlalchemy(cls, categoryID, category_name):
         """
-        Takes a RowProxy from sqlalchemy and returns an Article object. The argument
+        Takes a RowProxy from sqlalchemy and returns an Category object. The argument
         names are the row names from the sqlalchemy database. These vary slightly
         from the attributes of the article object.
         """
