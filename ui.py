@@ -541,7 +541,7 @@ def get_category_id(category_name):
     '''Takes the category name and returns the category ID'''
     #category_name = btc.read_text("Enter category ID or name: ")
     new_category = db.get_category_by_name(category_name)
-    category_id = new_category.id
+    category_id = new_category.CategoryID
     return category_id
     
 def get_csv_in_directory():
@@ -561,21 +561,21 @@ def get_csv_in_directory():
             for article in csv_articles:
                 try:
                     csv_article = csv_item_to_article(article)
-                    try:
-                        csv_article.name = Article.get_title(csv_article.link)
-                    except Exception as e:
-                        print(e)
-                        csv_article.name = 'Not specified'
-                    db.add_article_from_csv(csv_article)
-                    print(csv_article.name + " was added to database.\n")
-                #print('Import complete, return to main menu \n')
+                    #try:
+                        #csv_article.name = Article.get_title(csv_article.link)
                 except Exception as e:
                     print(e)
-                    print('Article import failed.')
-                    continue
-            print('Import complete, return to main menu')
+                    csv_article.name = 'Not specified'
+                db.add_article_from_csv(csv_article)
+                print(csv_article.name + " was added to database.\n")
+                #print('Import complete, return to main menu \n')
         except Exception as e:
             print(e)
+            print('Article import failed.')
+            #continue
+        print('Import complete, return to main menu')
+    #except Exception as e:
+     #       print(e)
 
 
 def create_csv_list(filename):

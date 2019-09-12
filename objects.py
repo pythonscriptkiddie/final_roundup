@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import re
-import requests
+#import requests
 import datetime
-from typing import Any, List
+from typing import Any
 from dataclasses import dataclass
 from dateutil.parser import parse
 #from test_dal2 import dal
@@ -153,21 +153,21 @@ class Article:
                       10: 'October', 11: 'November', 12: 'December'}
     #article_months is used to load csv files with the month name instead of a number
     
-    @staticmethod
-    def get_title(url):
-        req = requests.get(url)
-        soup = BeautifulSoup(req.text, "html5lib")
-        soup_title = str(soup.title)
-        html_stripped_title = Article.remove_html_tags(soup_title)
-        return html_stripped_title
+#    @staticmethod
+#    def get_title(url):
+#        req = requests.get(url)
+#        soup = BeautifulSoup(req.text, "html5lib")
+#        soup_title = str(soup.title)
+#        html_stripped_title = Article.remove_html_tags(soup_title)
+#        return html_stripped_title
     
-    @staticmethod
-    def get_text(url):
-        req = requests.get(url)
-        soup = BeautifulSoup(req.text, "html5lib")
-        soup_text = str(soup.text)
-        return soup_text
-    
+#    @staticmethod
+#    def get_text(url):
+#        req = requests.get(url)
+#        soup = BeautifulSoup(req.text, "html5lib")
+#        soup_text = str(soup.text)
+#        return soup_text
+#    
     @property
     def date_string(self):
         template = '{0}/{1}/{2}'
