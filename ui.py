@@ -557,21 +557,23 @@ def get_csv_in_directory():
         print(csv_articles)
         #csv_articles = [csv_item_to_article(csv_article) for csv_article in csv_articles]
         print('Articles to import:')
-        try:
-            for article in csv_articles:
-                try:
-                    csv_article = csv_item_to_article(article)
-                    #try:
-                        #csv_article.name = Article.get_title(csv_article.link)
-                except Exception as e:
-                    print(e)
-                    csv_article.name = 'Not specified'
+        #try:
+        for article in csv_articles:
+            try:
+                csv_article = csv_item_to_article(article)
+                #try:
+            #csv_article.name = Article.get_title(csv_article.link)
+            #except Exception as e:
+            #    print(e)
+            #csv_article.name = 'Not specified'
                 db.add_article_from_csv(csv_article)
                 print(csv_article.name + " was added to database.\n")
+            except IndexError:
+                print('Add article failed')
                 #print('Import complete, return to main menu \n')
-        except Exception as e:
-            print(e)
-            print('Article import failed.')
+        #except Exception as e:
+         #   print(e)
+        #    print('Article import failed.')
             #continue
         print('Import complete, return to main menu')
     #except Exception as e:
@@ -595,13 +597,14 @@ def csv_item_to_article(csv_list_item):
     new_article_news_item = na.get_article_from_url(csv_list_item[0])
     new_article_link = new_article_news_item.url
     new_article_title = new_article_news_item.title
+    print(new_article_title)
     #new_article_summary = new_article_news_item.summary
     #inclue this in the unfinished articles
     #new_article_description = 'Not specified'
     new_article_category = get_category_id(csv_list_item[1])
-    new_article_month = csv_list_item[2]
-    new_article_day = csv_list_item[3]
-    new_article_year = csv_list_item[4]
+    new_article_month = int(csv_list_item[2])
+    new_article_day = int(csv_list_item[3])
+    new_article_year = int(csv_list_item[4])
 
     article_from_csv = Article(name=new_article_title,link=new_article_link, category=new_article_category, date=datetime.date(year=new_article_year, month=new_article_month,
                                day=new_article_day), description='Not specified', author='Not specified', publication='Not specified')
@@ -876,7 +879,7 @@ search category - search by category''')
     def do_import_from_csv(self, command):
         del command
         print('import function temporarily disabled')
-        #get_csv_in_directory()
+        get_csv_in_directory()
     
     def help_import_from_csv(self):
         print('''Import articles from a CSV file. import_from_csv is entered

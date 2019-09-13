@@ -12,7 +12,7 @@ from newspaper import Article as NewsItem
 def get_article_from_url(url):
     new_article = NewsItem(url=url)
     new_article.download()
-    new_article.build()
+    new_article.parse()
     new_article.nlp()
     #print(new_article.__dict__)
     #print(new_article)

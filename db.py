@@ -325,6 +325,7 @@ def add_article_from_csv(article):
     ins = articles_table.insert().values(
             categoryID=article.category,
             name=article.name,
+            #print(article.name)
             year=article.year,
             month=article.month,
             day=article.day,

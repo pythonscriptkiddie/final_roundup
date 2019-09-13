@@ -48,7 +48,7 @@ def make_category(row):
 
 def make_article(row):
     '''
-    The variables in this code are incontruous with the rest of the program.
+    The variables in this code are incongruous with the rest of the program.
     result_zero was added to save time cutting and pasting.
     '''
     try:
@@ -72,6 +72,20 @@ def add_article(article):
     ins = articles_table.insert().values(
             categoryID=article.category.CategoryID,
             name=article.name,
+            date=article.date,
+            link=article.link,
+            description=article.description,
+            author = article.author,
+            publication = article.publication
+            )
+    result = connection.execute(ins)
+    print(result.rowcount)
+    
+def add_article_from_csv(article):
+    ins = articles_table.insert().values(
+            categoryID=article.category,
+            name=article.name,
+            #print(article.name, 'caught by database'),
             date=article.date,
             link=article.link,
             description=article.description,
