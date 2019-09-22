@@ -1,7 +1,10 @@
 #!/usr/bin/env/python3
 
 '''
-5/22/19 - Get article titles using BeautifulSoup
+22 September 2019
+
+This backup is for easy restoration of an attempted change in the article from
+csv format.
 
 '''
 
@@ -602,14 +605,12 @@ def csv_item_to_article(csv_list_item):
     #inclue this in the unfinished articles
     #new_article_description = 'Not specified'
     new_article_category = get_category_id(csv_list_item[1])
-    #new_article_month = int(csv_list_item[2])
-    #new_article_day = int(csv_list_item[3])
-    #dnew_article_year = int(csv_list_item[4])
-    new_article_datetime = parse(csv_list_item[2])
-    new_article_date = new_article_datetime.date()
+    new_article_month = int(csv_list_item[2])
+    new_article_day = int(csv_list_item[3])
+    new_article_year = int(csv_list_item[4])
 
-    article_from_csv = Article(name=new_article_title,link=new_article_link, category=new_article_category, date=new_article_date,
-                               description='Not specified', author='Not specified', publication='Not specified')
+    article_from_csv = Article(name=new_article_title,link=new_article_link, category=new_article_category, date=datetime.date(year=new_article_year, month=new_article_month,
+                               day=new_article_day), description='Not specified', author='Not specified', publication='Not specified')
     return article_from_csv
     
     
