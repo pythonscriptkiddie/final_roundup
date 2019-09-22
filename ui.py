@@ -119,7 +119,7 @@ def search_single_date(article_date):
         display_articles(articles, formatted_date)
         
 def search_date_range(command=''):
-    start_date = btc.read_text('Enter state date: ')
+    start_date = btc.read_text('Enter starting date: ')
     end_date = btc.read_text('Enter end date: ')
     try:
         start_date = parse(start_date)
@@ -855,7 +855,10 @@ search category - search by category''')
             
     def do_search_date(self, command):
         #date_search_interface(date=command)
-        search_single_date(command)
+        try:
+            search_single_date(command)
+        except ValueError as v:
+            print(v)
         
     def help_search_date(command):
         print('Enter search_date [date]')
