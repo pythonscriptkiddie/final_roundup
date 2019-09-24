@@ -128,6 +128,35 @@ def get_article(article_id):
     except AttributeError:
         print('Attribute error')
         return
+    
+def get_articles_by_id_range(starting_id, ending_id):
+    print(articles_table.c.articleID)
+    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= starting_id, 
+                     articles_table.c.articleID <= ending_id))
+    rp = connection.execute(s).fetchall()
+    articles_by_id_range = [make_article(row) for row in rp]
+    return articles_by_id_range
+#    try:
+#        #ew_article = make_article(rp)
+#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
+#                                              name=rp.name, date=rp.date, 
+#                                              link=rp.link,
+#                                              description=rp.description,
+#                                              author=rp.author,
+#                                              categoryID = rp.categoryID,
+#                                              category_name = rp.category_name,
+#                                              publication=rp.publication)
+#        return new_article
+#    except TypeError:
+#        print('Type error')
+#        return
+#    except AttributeError:
+#        print('Attribute error')
+#        return
 
 def get_articles_by_date(article_date):
     columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,

@@ -12,7 +12,7 @@ from objects import Article, Category
 import roundup_docx2 as roundup_docx
 import BTCInput as btc
 import operator
-import time
+#import time
 import csv
 import glob
 import cmd
@@ -44,8 +44,8 @@ def display_categories(command=''):
         print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
     print()
 
-def display_single_article2(article, title_term=''):
-    print(article.pdFormat)
+#def display_single_article2(article, title_term=''):
+#    print(article.pdFormat)
 
 def display_single_article(article, title_term):
     template ='''
@@ -141,6 +141,18 @@ def display_article_by_id():
         print()
         display_single_article(article, str(article.ArticleID))
         
+def display_article_by_id_range():
+    print('Enter the ID range as prompted')
+    starting_id = btc.read_int('Enter starting ID number: ')
+    ending_id = btc.read_int('Enter ending ID number: ')
+    articles = db.get_articles_by_id_range(starting_id, ending_id)
+    if articles == None:
+        print('No articles were found in that ID range.')
+    else:
+        print()
+        display_articles(articles, str('{0} {1}'.format(starting_id, ending_id)))
+    
+        
 def display_articles_by_author():
     author_snippet = btc.read_text("Author Name: ")
     articles = db.display_articles_by_author(author_snippet)
@@ -194,21 +206,31 @@ def add_article_from_newspaper(link):
         publication = btc.read_text('Please enter publication: ')
     try:
         year = newNewsItem.publish_date.year
-    except Exception as e:
-        print(e)
-        year = btc.read_int_ranged('Please enter year: ', 1, 2200)
-    try:
         month = newNewsItem.publish_date.month
-    except Exception as e:
-        print(e)
-        month = btc.read_int_ranged('Please enter month: ', 1, 12)
-    try:
         day = newNewsItem.publish_date.day
+        new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print(e)
-        day = btc.read_int_ranged('Please enter day: ', 1, 31)
-    try:
-        new_date = datetime.date(day=day, month=month, year=year)
+    #try:
+        new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+        new_date = parse(new_date)
+        new_date = new_date.date()
+        
+    #except Exception as e:
+    #    print(e)
+    #    year = btc.read_int_ranged('Please enter year: ', 1, 2200)
+    #try:
+    #    month = newNewsItem.publish_date.month
+    #except Exception as e:
+    #    print(e)
+    #    month = btc.read_int_ranged('Please enter month: ', 1, 12)
+    #try:
+    #    day = newNewsItem.publish_date.day
+    #except Exception as e:
+    #    print(e)
+    #   day = btc.read_int_ranged('Please enter day: ', 1, 31)
+    #try:
+    #    new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print('invalid date', e)
     try:
@@ -604,7 +626,7 @@ def csv_item_to_article(csv_list_item):
     new_article_category = get_category_id(csv_list_item[1])
     #new_article_month = int(csv_list_item[2])
     #new_article_day = int(csv_list_item[3])
-    #dnew_article_year = int(csv_list_item[4])
+    #new_article_year = int(csv_list_item[4])
     new_article_datetime = parse(csv_list_item[2])
     new_article_date = new_article_datetime.date()
 
@@ -855,6 +877,17 @@ search name - search by article title
 search author - search by author
 search category - search by category''')
             
+    def do_id_range(self, command):
+        if not command:
+            display_article_by_id_range()
+        else:
+            print('Incorrect suffix for ID range.')
+        
+    def help_id_range(self):
+        print('Enter id_range without any arguments')
+        print('id_range returns a list of articles with an ID greater than')
+        print('the minimum value and less than the maximum value')
+            
     def do_search_date(self, command):
         #date_search_interface(date=command)
         try:
@@ -862,7 +895,7 @@ search category - search by category''')
         except ValueError as v:
             print(v)
         
-    def help_search_date(command):
+    def help_search_date(self):
         print('Enter search_date [date]')
         print('e.g.:')
         print('search_date 05/02/2019')
@@ -872,9 +905,9 @@ search category - search by category''')
         if not command:
             search_date_range()
         else:
-            print('Incorrect suffix for date range')
+            print('Incorrect suffix for date range.')
     
-    def help_search_date_range(self, command):
+    def help_search_date_range(self):
         print('Enter search_date_range without any suffix')
         print('A prompt will appear on screen')
         print('allowing entry of start and ending dates')
