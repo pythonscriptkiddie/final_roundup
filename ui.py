@@ -224,9 +224,15 @@ def add_article_from_newspaper(link):
         new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print(e)
-        new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
-        new_date = parse(new_date)
-        new_date = new_date.date()
+        has_date = False
+        while has_date == False:
+            try:
+                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+                new_date = parse(new_date)
+                new_date = new_date.date()
+                has_date = True
+            except Exception as e:
+                print(e)
         
     except Exception as e:
         print('invalid date', e)
