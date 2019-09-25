@@ -118,19 +118,27 @@ def search_single_date(article_date):
         #print(articles)
         display_articles(articles, formatted_date)
         
-def search_date_range(command=''):
-    start_date = btc.read_text('Enter starting date: ')
-    end_date = btc.read_text('Enter end date: ')
+def search_date_range(start_date, end_date):
+    #start_date = btc.read_text('Enter starting date: ')
+    #end_date = btc.read_text('Enter end date: ')
     try:
-        start_date = parse(start_date)
-        end_date = parse(end_date)
-    except Exception as e:
-        print(e)
+        assert start_date < end_date
+    except AssertionError:
+        print('Start date must come before end date')
         return
+    #try:
+     #   start_date = parse(start_date)
+      #  end_date = parse(end_date)
+    #xcept Exception as e:
+     #   print(e)
+      #  return
     articles = db.get_articles_by_date_range(start_date, end_date)
-    start_date_formatted = start_date.date()
-    end_date_formatted = end_date.date()
-    display_articles(articles, str('{0} {1}'.format(start_date_formatted, end_date_formatted)))    
+    #start_date_formatted = start_date.date()
+    #end_date_formatted = end_date.date()
+    formatted_start_date = start_date.strftime("%m/%d/%Y")
+    formatted_end_date = end_date.strftime("%m/%d/%Y")
+    display_articles(articles, str('{0} to {1}'.format(formatted_start_date,
+                                   formatted_end_date)))    
     
 def display_article_by_id():
     article_id = input("Article ID: ")
@@ -141,10 +149,15 @@ def display_article_by_id():
         print()
         display_single_article(article, str(article.ArticleID))
         
-def display_article_by_id_range():
-    print('Enter the ID range as prompted')
-    starting_id = btc.read_int('Enter starting ID number: ')
-    ending_id = btc.read_int('Enter ending ID number: ')
+def display_article_by_id_range(starting_id, ending_id):
+    #print('Enter the ID range as prompted')
+    #starting_id = btc.read_int('Enter starting ID number: ')
+    #ending_id = btc.read_int('Enter ending ID number: ')
+    try:
+        assert starting_id < ending_id
+    except AssertionError:
+        print('Starting ID must be less than ending ID. Return to main menu.')
+        return
     articles = db.get_articles_by_id_range(starting_id, ending_id)
     if articles == None:
         print('No articles were found in that ID range.')
@@ -211,26 +224,10 @@ def add_article_from_newspaper(link):
         new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print(e)
-    #try:
         new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
         new_date = parse(new_date)
         new_date = new_date.date()
         
-    #except Exception as e:
-    #    print(e)
-    #    year = btc.read_int_ranged('Please enter year: ', 1, 2200)
-    #try:
-    #    month = newNewsItem.publish_date.month
-    #except Exception as e:
-    #    print(e)
-    #    month = btc.read_int_ranged('Please enter month: ', 1, 12)
-    #try:
-    #    day = newNewsItem.publish_date.day
-    #except Exception as e:
-    #    print(e)
-    #   day = btc.read_int_ranged('Please enter day: ', 1, 31)
-    #try:
-    #    new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print('invalid date', e)
     try:
@@ -246,7 +243,7 @@ def add_article_from_newspaper(link):
         print('Keyword download failed')
         keywords= 'keywords not found'
     print('TITLE - {0} - AUTHOR {1}'.format(name, author))
-    print('DATE - {0}/{1}/{2} - PUBLICATION {3}'.format(month, day, year, publication))
+    print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
     #print(author)
     #print(publication)
     #print('{0}/{1}/{2}'.format(month, day, year))
@@ -273,10 +270,6 @@ def add_article_from_newspaper(link):
                   author=author, publication=publication)
     db.add_article(article)    
     print(name + " was added to database.\n")
-    #except Exception as e:
-    #    print('Article download failed.', e)
-    #new_article = Article(link=)
-    #print('Article download failed. Return to main menu.')
 
 def manual_add(link=None):
     if (link == None) or (not link):
@@ -287,9 +280,6 @@ def manual_add(link=None):
         print('Manual article creation/n')
         print('Link: {0}'.format(link))
         display_categories()
-        #print(link)
-    #if link == None:
-    #    print('No link supplied, manual_add must be followed by link.')
         new_article_category = btc.read_int('Enter category for article: ')
         category = db.get_category(new_article_category)
         assert category != None
@@ -370,12 +360,6 @@ def update_article_description(article_id):
             if description_choice == 'y':
                 article_summary = na.get_article_summary(article.link)
                 print(article_summary)
-#                article_text = Article.get_text(article.link)
-#                #article_text = dm.get_cleaned_text(link)
-#                article_text = article_text.split()
-#                article_text = [i for i in article_text if de.isEnglish(i) == True]
-#                article_text = ' '.join(article_text)
-#                print(article_text)
             new_description = btc.read_text('Enter new description or "." to cancel: ')
             
             if new_description != '.':
@@ -432,11 +416,7 @@ def update_article_date(article_id):
             new_date = btc.read_text('Enter new date:' )
             new_date = parse(new_date)
             new_date_format = new_date.date()
-            #new_date = datetime.date(new_date)
             print(type(new_date))
-            #new_day = btc.read_int_ranged('Enter new day: ', min_value = 1, max_value = 31)
-            #new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
-            #new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
             date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date_format),
                                               min_value=1, max_value=2)
             if date_choice == 1:
@@ -460,8 +440,6 @@ def scrape_article_name(article_id):
             try:
                 new_article_news_item = na.get_article_from_url(article.link)
                 new_title = new_article_news_item.title
-                #new_title = na.get_article_title(article.link)
-                #new_title = Article.get_title(article.link)
                 print('''
 New title: {0}
 Old title: {1}'''.format(new_title, article.name))
@@ -561,7 +539,6 @@ def get_date_range_category_stats(start_date, end_date):
     
 def get_category_id(category_name):
     '''Takes the category name and returns the category ID'''
-    #category_name = btc.read_text("Enter category ID or name: ")
     new_category = db.get_category_by_name(category_name)
     category_id = new_category.CategoryID
     return category_id
@@ -620,13 +597,7 @@ def csv_item_to_article(csv_list_item):
     new_article_link = new_article_news_item.url
     new_article_title = new_article_news_item.title
     print(new_article_title)
-    #new_article_summary = new_article_news_item.summary
-    #inclue this in the unfinished articles
-    #new_article_description = 'Not specified'
     new_article_category = get_category_id(csv_list_item[1])
-    #new_article_month = int(csv_list_item[2])
-    #new_article_day = int(csv_list_item[3])
-    #new_article_year = int(csv_list_item[4])
     new_article_datetime = parse(csv_list_item[2])
     new_article_date = new_article_datetime.date()
 
@@ -634,23 +605,6 @@ def csv_item_to_article(csv_list_item):
                                description='Not specified', author='Not specified', publication='Not specified')
     return article_from_csv
     
-    
-#    print(new_article_news_item.__dict__.keys())
-#    #new_article = csv_list_item[0]
-#    new_article_link = new_article[0]
-#    new_article_category = get_category_id(new_article[1])
-#    new_article_day = new_article[2]
-#    new_article_month = new_article[3]
-#    new_article_year = new_article[4]
-#    #new_article_news_item = na.get_article_from_url(new_article_link)
-#    article_from_csv = Article(name='Untitled Article', year=new_article_year, month=new_article_month,day=new_article_day,
-#                      category=new_article_category, link=new_article_link, description='Not specified',
-#                      author='Not specified', publication='Not specified')
-#    print(article_from_csv)
-
-
-            
-
 def delete_article(article_id):
     try:
         article = db.get_article(article_id)
@@ -717,9 +671,6 @@ def export_roundup_by_date():
     end_date = end_date.date()
     print('start date: ', start_date, 'end date: ', end_date)
     print('start date type:', type(start_date), 'end date type:', type(end_date))
-    #return
-    #roundup_month = btc.read_int_ranged('Enter roundup month: ', 1, 12)
-    #roundup_year = btc.read_int_ranged('Enter roundup year: ', 1, 2100)
     filename = btc.read_text('Enter roundup filename: ')
     roundup_choice = btc.read_int_ranged('Enter 1 to export roundup, 2 to cancel: ', 1, 2)
     if roundup_choice == 1:
@@ -878,18 +829,31 @@ search author - search by author
 search category - search by category''')
             
     def do_id_range(self, command):
-        if not command:
-            display_article_by_id_range()
-        else:
-            print('Incorrect suffix for ID range.')
+        try:
+            command=command.split('-')
+            start_id = command[0]
+            end_id = command[1]
+            start_id = int(start_id)
+            end_id = int(end_id)
+            display_article_by_id_range(start_id, end_id)
+        except IndexError:
+            print('id_range must be followed by the starting and ending IDs')
+            print('"-" must be used to separate the starting and ending dates')
+        except ValueError:
+            print('id_range only takes integers as arguments')
+        #
+        #if not command:
+        #    display_article_by_id_range()
+        #else:
+        #    print('Incorrect suffix for ID range.')
         
     def help_id_range(self):
-        print('Enter id_range without any arguments')
+        print('enter id_range [starting id]-[ending id]')
+        #print('Enter id_range without any arguments')
         print('id_range returns a list of articles with an ID greater than')
         print('the minimum value and less than the maximum value')
             
     def do_search_date(self, command):
-        #date_search_interface(date=command)
         try:
             search_single_date(command)
         except ValueError as v:
@@ -902,17 +866,20 @@ search category - search by category''')
         print('search_date month 06/14/2019')
         
     def do_search_date_range(self, command):
-        if not command:
-            search_date_range()
-        else:
-            print('Incorrect suffix for date range.')
-    
+        try:
+            command = command.split('-')
+            start_date = parse(command[0])
+            end_date = parse(command[1])
+            start_date = start_date.date()
+            end_date = end_date.date()
+            search_date_range(start_date, end_date)
+        except ValueError:
+            print('Date range entered incorrectly, return to main menu.')
+
     def help_search_date_range(self):
         print('Enter search_date_range without any suffix')
         print('A prompt will appear on screen')
         print('allowing entry of start and ending dates')
-#    def do_add(self, command):
-#        add_article_interface(command)
         
     def do_import_from_csv(self, command):
         del command
@@ -925,15 +892,10 @@ without any suffix''')
     
     def do_add(self, command):
         add_article_from_newspaper(link=command)
-    
-#    def help_getfromnews(self, command):
-#       print('getfromnews [article_url] creates an article from the newspaper module')
-#        print('user will be prompted to supply category and description')
         
     def help_add(self):
         print('''Enter add [link] to add articles:
 add [link] creates an article from [link] using the newspaper module''')
-#add import - imports articles from a csv file''')
         
     def do_manual_add(self, command):
         manual_add(link=command)
@@ -989,17 +951,6 @@ will return to the main menu.
         print('udartdate [article_id] updates the date of an article')
         print('The function calls a prompt for the user to enter the date')
         
-#    def do_finalize_titles(self, command):
-#        try:
-#            command = split_command(command)
-#            finalize_title_updates(month=command[0], year=command[1])
-#        except TypeError:
-#            print('finalize_titles entered incorrectly')
-#    
-#    def help_finalize_titles(self):
-#        print('finalize_titles [month]')
-#        print('updates all the articles from that month')
-        
     def do_delete_article(self, command):
         delete_article(article_id=command)
         
@@ -1039,13 +990,6 @@ will return to the main menu.
         print('finalize [month], [year]')
         print('finalize 6 2019 : finalizes the June 2019 articles')
         
-    #def do_review_desc(self, command):
-     #   finalize_desc_month(command)
-        
-    #def help_review_desc(self, command):
-       # print('review_desc does not take a suffix')
-      #  print('review the descriptions of each article and make changes')
-        
     def do_export(self, command):
         export_interface(command)
         
@@ -1067,7 +1011,6 @@ export finish_desc - finish article descriptions''')
         db.close()
         print('Exiting Roundup Generator')
         sys.exit()
-        #raise SystemExit
         
     def help_exit(self):
         print('Exits the program, closes the database')
@@ -1076,7 +1019,6 @@ export finish_desc - finish article descriptions''')
         db.close()
         print("Quitting Roundup Generator")
         sys.exit()
-        #raise SystemExit
         
     def help_quit(self):
         print('Exits the program, closes the database')
@@ -1095,8 +1037,6 @@ export finish_desc - finish article descriptions''')
             print(e.__class__, ":", e)  
             
 def main():
-    #db_app = db.App()
-    #db_app.setUpClass()#connect()
     db.connect()
     app = RGenCMD().cmdloop()
     
