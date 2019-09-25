@@ -153,21 +153,6 @@ class Article:
                       10: 'October', 11: 'November', 12: 'December'}
     #article_months is used to load csv files with the month name instead of a number
     
-#    @staticmethod
-#    def get_title(url):
-#        req = requests.get(url)
-#        soup = BeautifulSoup(req.text, "html5lib")
-#        soup_title = str(soup.title)
-#        html_stripped_title = Article.remove_html_tags(soup_title)
-#        return html_stripped_title
-    
-#    @staticmethod
-#    def get_text(url):
-#        req = requests.get(url)
-#        soup = BeautifulSoup(req.text, "html5lib")
-#        soup_text = str(soup.text)
-#        return soup_text
-#    
     @property
     def date_string(self):
         template = '{0}/{1}/{2}'
@@ -297,17 +282,5 @@ class Category:
     def name(self):
         return self.category_name
 
-#class App(object):
-#    @classmethod
-#    def setUpClass(cls):
-#        dal.db_init('sqlite:///db2.db')
-#        
-#    def tearDownClass(self):
-#        dal.session.close()
-
-
-#    def __repr__(self):
-#        template = "id: {0} name: {1}"
-#        return template.format(self.id, self.name)
             
     
