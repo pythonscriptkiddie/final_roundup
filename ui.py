@@ -193,7 +193,12 @@ def add_article_from_newspaper(link):
     #link = btc.read_text('Link or "." to cancel: ')
     #try:
     for i in tqdm.tqdm(range(1)):
-        newNewsItem = na.get_article_from_url(link)
+        try:
+            newNewsItem = na.get_article_from_url(link)
+        except:
+            print('Article download failed, invalid URL')
+            print('Returning to main menu')
+            return
     print(newNewsItem)
     #except Exception as e:
         #print(e)
