@@ -298,7 +298,7 @@ def get_articles_by_name(title_snippet):
         articles_by_name.append(new_article)
     return articles_by_name
 
-def display_articles_by_description(description_snippet):
+def get_articles_by_description(description_snippet):
     '''
     This function is intended to display articles based on partial article
     descriptions.
