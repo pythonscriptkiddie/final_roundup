@@ -547,15 +547,24 @@ def get_date_range_category_stats(start_date, end_date):
     end date input by the user.
     '''
     categories = db.get_categories()
-    total_articles = len(db.get_articles_by_date_range(start_date, end_date))
+    total_articles = len(db.get_articles_by_date_range(start_date,
+                                                       end_date))
     category_ids = [[category.CategoryID, category.category_name,
                      db.get_date_range_article_count(category.CategoryID,
-                                                  start_date, end_date)] for category in categories]
+                                                  start_date,
+                                                  end_date)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
-    uncategorized_articles = db.get_date_range_undescribed_articles('Not specified', start_date, end_date)
-    uncategorized_articles = len(uncategorized_articles)
+#    undescribed_articles = db.get_date_range_undescribed_articles(description_snippet='Not specified',
+#                                                                  start_date=start_date,
+#                                                                  end_date=end_date)
+    undescribed_articles = db.get_undescribed_article_count(description_snippet='Not specified',
+                                                            start_date = start_date,
+                                                            end_date = end_date)
+    #print(len(undescribed_articles))
+    #undescribed_articles = len(undescribed_articles)
+    print('{0} articles are undescribed'.format(undescribed_articles))
     try:
-        percent_incomplete = (uncategorized_articles/total_articles)*100
+        percent_incomplete = (undescribed_articles/total_articles)*100
         total_articles_completed = 100
         percent_incomplete = total_articles_completed - percent_incomplete
         print('CATEGORY STATS')
@@ -566,7 +575,8 @@ def get_date_range_category_stats(start_date, end_date):
         for item in category_ids:
             print(line_format.format(item[0], item[1], str(item[2])))
         print('-'*64)
-        print('Uncategorized Articles: {0} (Completed: {1} percent)'.format(uncategorized_articles, percent_incomplete))
+        print('Undescribed Articles: {0} (Completed: {1:.2f} percent)'.format(undescribed_articles,
+              percent_incomplete))
         print('Total Articles: {0}'.format(total_articles))
     except ZeroDivisionError as e:
         print(e)

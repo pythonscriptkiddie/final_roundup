@@ -459,6 +459,15 @@ def display_articles_by_author(author_snippet):
         articles_by_name.append(new_article)
     return articles_by_name
 
+def get_undescribed_article_count(start_date, end_date, description_snippet):
+    #def get_date_range_article_count(category_id, start_date, end_date):
+    s = select([func.count(articles_table)]).where(and_(articles_table.c.description.ilike("%{0}%".format(description_snippet)),
+              articles_table.c.date >= start_date, articles_table.c.date <= end_date))
+    rp = connection.execute(s)
+    record = rp.first()
+    #print(record.count_1)
+    return record.count_1
+    
 
 def get_date_range_article_count(category_id, start_date, end_date):
     s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
