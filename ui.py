@@ -226,7 +226,7 @@ def add_article_from_newspaper(link):
         #get article title
     try:
         name = newNewsItem.title #get the title for the article
-        print('NameTest {0}'.format(name))
+        #print('NameTest {0}'.format(name))
     except Exception as e:
         print(e)
         name = btc.read_text('Please enter title: ')
@@ -602,32 +602,40 @@ def get_csv_in_directory():
         #csv_articles = [csv_item_to_article(csv_article) for csv_article in csv_articles]
         print('Articles to import:')
         #try:
-        for article in csv_articles:
-            try:
-                csv_article = csv_item_to_article(article)
-                #try:
-            #csv_article.name = Article.get_title(csv_article.link)
+        try:
+            for article in csv_articles:
+                try:
+                    csv_article = csv_item_to_article(article)
+                    #try:
+                #csv_article.name = Article.get_title(csv_article.link)
+                #except Exception as e:
+                #    print(e)
+                #csv_article.name = 'Not specified'
+                    db.add_article_from_csv(csv_article)
+                    print(csv_article.name + " was added to database.\n")
+                except IndexError:
+                    print('Add article failed')
+                    #print('Import complete, return to main menu \n')
             #except Exception as e:
-            #    print(e)
-            #csv_article.name = 'Not specified'
-                db.add_article_from_csv(csv_article)
-                print(csv_article.name + " was added to database.\n")
-            except IndexError:
-                print('Add article failed')
-                #print('Import complete, return to main menu \n')
-        #except Exception as e:
-         #   print(e)
-        #    print('Article import failed.')
-            #continue
-        print('Import complete, return to main menu')
+             #   print(e)
+            #    print('Article import failed.')
+                #continue
+            print('Import complete, return to main menu')
+        except TypeError:
+            print('File not found')
+            return
     #except Exception as e:
      #       print(e)
 
 
 def create_csv_list(filename):
     csvRows = []
-    csvFileObj = open(filename)
-    readerObj = csv.reader(csvFileObj)
+    try:
+        csvFileObj = open(filename)
+        readerObj = csv.reader(csvFileObj)
+    except FileNotFoundError:
+        print('File not found, return to main menu')
+        return
     print('csv reader created')
     for row in readerObj:
         if readerObj.line_num == 1:

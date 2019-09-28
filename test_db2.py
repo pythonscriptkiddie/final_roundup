@@ -475,6 +475,7 @@ def get_date_range_article_count(category_id, start_date, end_date):
     rp = connection.execute(s)
     record = rp.first()
     #print(record.count_1)
+    #print(record.count_1)
     return record.count_1
 
 
