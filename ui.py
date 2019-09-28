@@ -5,14 +5,12 @@
 
 '''
 
-#from _db.objects import Article, Category
 import test_db2 as db
 #import _db.test_dal2 as dal
 from objects import Article, Category
 import roundup_docx2 as roundup_docx
 import BTCInput as btc
 import operator
-#import time
 import csv
 import glob
 import cmd
@@ -21,8 +19,6 @@ import news_article as na
 import datetime
 import tqdm
 from dateutil.parser import parse
-#from dateutil.parser import parse
-#import warnings
 
 
 '''perhaps create a menu that appears when you choose the edit article option
@@ -43,9 +39,6 @@ def display_categories(command=''):
     #for category in categories:
         print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
     print()
-
-#def display_single_article2(article, title_term=''):
-#    print(article.pdFormat)
 
 def display_single_article(article, title_term):
     template ='''
@@ -133,22 +126,12 @@ def search_single_date(article_date):
         display_articles(articles, formatted_date)
         
 def search_date_range(start_date, end_date):
-    #start_date = btc.read_text('Enter starting date: ')
-    #end_date = btc.read_text('Enter end date: ')
     try:
         assert start_date < end_date
     except AssertionError:
         print('Start date must come before end date')
         return
-    #try:
-     #   start_date = parse(start_date)
-      #  end_date = parse(end_date)
-    #xcept Exception as e:
-     #   print(e)
-      #  return
     articles = db.get_articles_by_date_range(start_date, end_date)
-    #start_date_formatted = start_date.date()
-    #end_date_formatted = end_date.date()
     formatted_start_date = start_date.strftime("%m/%d/%Y")
     formatted_end_date = end_date.strftime("%m/%d/%Y")
     display_articles(articles, str('{0} to {1}'.format(formatted_start_date,
@@ -165,9 +148,6 @@ def display_article_by_id(article_id=None):
         display_single_article(article, str(article.ArticleID))
         
 def display_article_by_id_range(starting_id, ending_id):
-    #print('Enter the ID range as prompted')
-    #starting_id = btc.read_int('Enter starting ID number: ')
-    #ending_id = btc.read_int('Enter ending ID number: ')
     try:
         assert starting_id < ending_id
     except AssertionError:
@@ -189,7 +169,6 @@ def display_articles_by_author(author_snippet=None):
         print("There are no articles by that author. article NOT found.\n")
     else:
         print()
-        #display_single_article(article, str(article.ArticleID))
         display_articles(articles, "AUTHOR: " + str(articles[0].author))
 
 def display_articles_by_publication(publication_snippet=None):
@@ -210,9 +189,6 @@ def add_article_from_newspaper(link):
     '''
     Adds an article from the newspaper module after downloading it
     '''
-   # try:
-    #link = btc.read_text('Link or "." to cancel: ')
-    #try:
     for i in tqdm.tqdm(range(1)):
         try:
             newNewsItem = na.get_article_from_url(link)
@@ -221,12 +197,8 @@ def add_article_from_newspaper(link):
             print('Returning to main menu')
             return
     print(newNewsItem)
-    #except Exception as e:
-        #print(e)
-        #get article title
     try:
         name = newNewsItem.title #get the title for the article
-        #print('NameTest {0}'.format(name))
     except Exception as e:
         print(e)
         name = btc.read_text('Please enter title: ')
@@ -276,10 +248,6 @@ def add_article_from_newspaper(link):
         keywords= 'keywords not found'
     print('TITLE - {0} - AUTHOR {1}'.format(name, author))
     print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
-    #print(author)
-    #print(publication)
-    #print('{0}/{1}/{2}'.format(month, day, year))
-    #print(summary)
     print('KEYWORDS: ', keywords)
     display_categories()
     category_id = btc.read_text("Category ID: ")
@@ -554,9 +522,6 @@ def get_date_range_category_stats(start_date, end_date):
                                                   start_date,
                                                   end_date)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
-#    undescribed_articles = db.get_date_range_undescribed_articles(description_snippet='Not specified',
-#                                                                  start_date=start_date,
-#                                                                  end_date=end_date)
     undescribed_articles = db.get_undescribed_article_count(description_snippet='Not specified',
                                                             start_date = start_date,
                                                             end_date = end_date)
@@ -762,31 +727,6 @@ def export_roundup_by_category():
         #display_title()
     elif roundup_choice == 2:
         print('Roundup export cancelled. Return to main menu.\n')
-        #display_title()
-
-#def search_article_interface(command):
-#    '''
-#    Note: search_article_interface is being deprecated. Each of the functions
-#    under search_commands will be given its own command. Date search has been
-#    removed and has a new command named 'search_date'.
-#    '''
-#    search_commands = {'id': display_article_by_id,
-#                       'name': display_articles_by_name,
-#                       'author' : display_articles_by_author,
-#                       'category': get_articles_by_category,
-#                       'publication': display_articles_by_publication,
-#                       }
-#    
-#    if not command:
-#        print('Enter command')
-#    else:
-#        try:
-#            command=search_commands[command]()
-#        except KeyError:
-#            print('Invalid suffix for search')
-#        except IndexError as e:
-#            print('Publication not found error code:', e)
-
     
 
 def get_articles_by_category(category=None):
@@ -886,19 +826,7 @@ class RGenCMD(cmd.Cmd):
     intro = "Welcome to RoundupGenerator 3.0"
     prompt = "(RoundupGenerator) "
     entry = ""
-    
-#    def do_search(self, command):
-#        #command = input('Enter command: ')
-#        search_article_interface(command)
-#    
-#    def help_search(self):
-#        print('''Enter "search [option]" to search articles: 
-#search id - search by article id
-#search name - search by article title
-#search author - search by author
-#search category - search by category''')
-      
-       
+           
     def do_search_id(self, command):
         display_article_by_id(command)
         
@@ -910,22 +838,12 @@ search_id 18 will find the article with ID 18''')
     def do_id_range(self, command):
         try:
             start_id, end_id=parse_arg(command)
-            #command=command.split('-')
-            #start_id = command[0]
-            #end_id = command[1]
-            #start_id = int(start_id)
-            #end_id = int(end_id)
             display_article_by_id_range(start_id, end_id)
         except IndexError:
             print('id_range must be followed by the starting and ending IDs')
             print('"-" must be used to separate the starting and ending dates')
         except ValueError:
             print('id_range only takes integers as arguments')
-        #
-        #if not command:
-        #    display_article_by_id_range()
-        #else:
-        #    print('Incorrect suffix for ID range.')
         
     def help_id_range(self):
         print('enter id_range [starting id]-[ending id]')
@@ -961,12 +879,7 @@ search_id 18 will find the article with ID 18''')
         
     def do_search_date_range(self, command):
         try:
-            #command = command.split('-')
             start_date, end_date = parse_dates(command)
-            #start_date = parse(command[0])
-            #end_date = parse(command[1])
-            #start_date = start_date.date()
-            #end_date = end_date.date()
             search_date_range(start_date, end_date)
         except ValueError:
             print('Date range entered incorrectly, return to main menu.')
@@ -1088,13 +1001,8 @@ will return to the main menu.
         print('')
         
     def do_stats(self, command):
-        #try:
         try:
             start_date, end_date = parse_dates(command)
-        #start_date = parse(command[0])
-        #end_date = parse(command[1])
-        #start_date = start_date.date()
-        #end_date = end_date.date()
             get_stats(start_date, end_date)
         except ValueError:
             print('Date range entered incorrectly, return to main menu.')
@@ -1152,8 +1060,6 @@ export finish_desc - finish article descriptions''')
         
     def help_quit(self):
         print('Exits the program, closes the database')
-        
-      
 
     def default(self, line):       
         """Called on an input line when the command prefix is not recognized.
