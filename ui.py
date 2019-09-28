@@ -909,11 +909,12 @@ search_id 18 will find the article with ID 18''')
         
     def do_id_range(self, command):
         try:
-            command=command.split('-')
-            start_id = command[0]
-            end_id = command[1]
-            start_id = int(start_id)
-            end_id = int(end_id)
+            start_id, end_id=parse_arg(command)
+            #command=command.split('-')
+            #start_id = command[0]
+            #end_id = command[1]
+            #start_id = int(start_id)
+            #end_id = int(end_id)
             display_article_by_id_range(start_id, end_id)
         except IndexError:
             print('id_range must be followed by the starting and ending IDs')
@@ -969,6 +970,8 @@ search_id 18 will find the article with ID 18''')
             search_date_range(start_date, end_date)
         except ValueError:
             print('Date range entered incorrectly, return to main menu.')
+        except TypeError:
+            print('Date range entered incorrectly, return to main menu')
 
     def help_search_date_range(self):
         print('Enter search_date_range without any suffix')
@@ -1095,6 +1098,8 @@ will return to the main menu.
             get_stats(start_date, end_date)
         except ValueError:
             print('Date range entered incorrectly, return to main menu.')
+        except TypeError:
+            print('Date range entered incorrectly, return to main menu')
     
     def help_stats(self):
         print('stats displays article data for a specified date range')
