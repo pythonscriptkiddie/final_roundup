@@ -487,13 +487,16 @@ Old title: {1}'''.format(new_title, article.name))
         elif article_choice == 2:
             print('article update cancelled')
     
-def finalize_article_descriptions(month, year=2019):
-    undescribed = db.finalize_descriptions(month, year)
+def finalize_article_descriptions(start_date, end_date):
+    undescribed = db.get_date_range_undescribed_articles(description_snippet='Not specified',
+                                                         start_date=start_date,
+                                                         end_date=end_date)
     undescribed_articles = len(undescribed)
     print('{0} undescribed articles'.format(undescribed_articles))
     for article in undescribed:
         print('{0} undescribed articles'.format(undescribed_articles))
         update_article_description(article.ArticleID)
+        undescribed_articles -= 1
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
         if description_choice == 2:
             print('Update descriptions cancelled')
@@ -844,7 +847,21 @@ def split_command(command):
         except Exception as e:
             print(e)
         
-            
+def parse_arg(arg):
+    'Convert a series of zero or more numbers to an argument tuple'
+    return tuple(map(int, arg.split()))
+
+def parse_dates(arg):
+    'Convert a series of zero or more numbers to an argument tuple of dates'
+    try:
+        #Let's try to split the argument using space as a separator
+        return tuple(map(parse, arg.split()))
+    except ValueError:
+        print('Invalid date format, please enter dates with " " as a separator')
+        return
+    except TypeError:
+        print('Invalid date format')         
+        return 
 
 class RGenCMD(cmd.Cmd):
         
@@ -862,7 +879,8 @@ class RGenCMD(cmd.Cmd):
 #search name - search by article title
 #search author - search by author
 #search category - search by category''')
-            
+      
+       
     def do_search_id(self, command):
         display_article_by_id(command)
         
@@ -924,11 +942,12 @@ search_id 18 will find the article with ID 18''')
         
     def do_search_date_range(self, command):
         try:
-            command = command.split('-')
-            start_date = parse(command[0])
-            end_date = parse(command[1])
-            start_date = start_date.date()
-            end_date = end_date.date()
+            #command = command.split('-')
+            start_date, end_date = parse_dates(command)
+            #start_date = parse(command[0])
+            #end_date = parse(command[1])
+            #start_date = start_date.date()
+            #end_date = end_date.date()
             search_date_range(start_date, end_date)
         except ValueError:
             print('Date range entered incorrectly, return to main menu.')
@@ -1049,23 +1068,26 @@ will return to the main menu.
         
     def do_stats(self, command):
         #try:
-        command = command.split('-')
-        start_date = parse(command[0])
-        end_date = parse(command[1])
-        start_date = start_date.date()
-        end_date = end_date.date()
-        get_stats(start_date, end_date)
-        #except ValueError:
-        #    print('Date range entered incorrectly, return to main menu.')
+        try:
+            start_date, end_date = parse_dates(command)
+        #start_date = parse(command[0])
+        #end_date = parse(command[1])
+        #start_date = start_date.date()
+        #end_date = end_date.date()
+            get_stats(start_date, end_date)
+        except ValueError:
+            print('Date range entered incorrectly, return to main menu.')
     
     def help_stats(self):
         print('stats displays article data for a specified date range')
         print('Enter "stats [starting_date] [ending_date]" to print stats')
     
     def do_complete_desc(self, command):
-        command = split_command(command)
+        #command = split_command(command)
         try:
-            finalize_article_descriptions(month=command[0], year=command[1])
+            start_date, end_date = parse_dates(command)
+        
+            finalize_article_descriptions(start_date=start_date, end_date=end_date)
         except TypeError:
             print('Finalize command entered incorrectly')
             print('Enter finalize [m] [y] to finalize descriptions')
@@ -1108,9 +1130,7 @@ export finish_desc - finish article descriptions''')
     def help_quit(self):
         print('Exits the program, closes the database')
         
-    def parse(arg):
-        'Convert a series of zero or more numbers to an argument tuple'
-        return tuple(map(int, arg.split()))    
+      
 
     def default(self, line):       
         """Called on an input line when the command prefix is not recognized.

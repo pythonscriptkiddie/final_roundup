@@ -324,7 +324,8 @@ def get_articles_by_description(description_snippet):
     #articles_by_name = [make_article(row) for row in rp]
     #return articles_by_name
     
-def get_date_range_undescribed_articles(description_snippet, start_date, end_date):
+def get_date_range_undescribed_articles(start_date, end_date,
+                                        description_snippet='Not specified'):
     '''
     This function is intended to display articles based on partial article
     descriptions.
