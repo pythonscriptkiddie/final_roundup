@@ -5,7 +5,7 @@
 
 '''
 
-import test_db2 as db
+import db
 #import _db.test_dal2 as dal
 from objects import Article, Category
 import roundup_docx2 as roundup_docx

@@ -6,6 +6,8 @@ Created on Thu Aug 15 20:39:38 2019
 @author: thomassullivan
 """
 
+#A backup of the database file as of 9/29/19
+
 from datetime import datetime, date
 from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         DateTime, Date, ForeignKey, Boolean, create_engine,
@@ -138,7 +140,16 @@ def get_articles_by_id_range(starting_id, ending_id):
     s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= starting_id, 
                      articles_table.c.articleID <= ending_id))
     rp = connection.execute(s).fetchall()
-    articles_by_id_range = [make_article(row) for row in rp]
+    articles_by_id_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_id_range = [make_article(row) for row in rp]
     return articles_by_id_range
 #    try:
 #        #ew_article = make_article(rp)
@@ -165,7 +176,17 @@ def get_articles_by_date(article_date):
     s = select(columns)
     s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
     rp = connection.execute(s).fetchall()
-    articles_by_date = [make_article(row) for row in rp]
+    articles_by_date = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_date = [make_article(row) for row in rp]
+    
     #for i in rp:
         #print(i)
     #a#rticles_by_date = [Article.from_sqlalchemy(i) for i in rp]
@@ -190,8 +211,17 @@ def get_articles_by_date_range(start_date, end_date):
               articles_table.c.date <= end_date))
     #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
     rp = connection.execute(s).fetchall()
-    articles_by_date = [make_article(row) for row in rp]
-    return articles_by_date
+    articles_by_date_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_date = [make_article(row) for row in rp]
+    return articles_by_date_range
 
 def get_categories():
     s = select([categories_table.c.categoryID, categories_table.c.category_name])
@@ -244,24 +274,33 @@ def get_articles_for_roundup(start_date, end_date, category_id):
               articles_table.c.date <= end_date, categories_table.c.categoryID==category_id))
               #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
     rp = connection.execute(s)
-    results = rp.fetchall()
-    articles_for_roundup = []
-    for i in results:
-        #print(i)
-        #new_article = Article.from_sqlalchemy(i)
-        articles_for_roundup.append(i)
-
-
-        
-    article_dict_list = [dict(i) for i in articles_for_roundup]
-   # We make a dictionary so that we can make an article with it using
-   # make_article
-    
-    new_articles = []
-    for item in article_dict_list:
-        new_articles.append(make_article(item))
-        
-    return new_articles
+    #results = rp.fetchall()
+    articles_for_roundup = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    return articles_for_roundup
+#    for i in results:
+#        #print(i)
+#        #new_article = Article.from_sqlalchemy(i)
+#        articles_for_roundup.append(i)
+#
+#
+#        
+#    article_dict_list = [dict(i) for i in articles_for_roundup]
+#   # We make a dictionary so that we can make an article with it using
+#   # make_article
+#    
+#    new_articles = []
+#    for item in article_dict_list:
+#        new_articles.append(make_article(item))
+#        
+#    return new_articles
 
 def display_article_by_name(title_snippet):
     '''
@@ -272,7 +311,16 @@ def display_article_by_name(title_snippet):
     
     rp = connection.execute(stmt).fetchone()
     try:
-        article_by_name = make_article(rp)
+        article_by_name = Article.from_sqlalchemy(articleID=rp.articleID, 
+                                              name=rp.name, date=rp.date, 
+                                              link=rp.link,
+                                              description=rp.description,
+                                              author=rp.author,
+                                              categoryID = rp.categoryID,
+                                              category_name = rp.category_name,
+                                              publication=rp.publication)
+        #article_by_name = make_article(rp)
+        
         return article_by_name
     except Exception as e:
         print(e)

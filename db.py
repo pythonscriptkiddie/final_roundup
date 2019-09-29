@@ -1,112 +1,249 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 26 12:27:29 2019
+Created on Thu Aug 15 20:39:38 2019
 
 @author: thomassullivan
 """
 
-from sqlalchemy import create_engine, MetaData, Table, Column, ForeignKey, and_, or_, not_
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.sql import select, insert, delete, update, func
+from datetime import datetime, date
+from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
+                        DateTime, Date, ForeignKey, Boolean, create_engine,
+                        CheckConstraint, insert, select, update, and_, or_, not_)
 
-from objects.objects2 import Article
-from objects.objects2 import Category
-import objects.BTCInput as BTCInput
-
-connection = False
+from objects import Article, Category
+from sqlalchemy.sql import delete, func
+connection=False
 
 def connect():
     global connection, articles_table, categories_table
     if not connection:
-        engine = create_engine("sqlite:///_db/articles.sqlite")
-        meta = MetaData()
-        meta.reflect(bind=engine)
-        articles_table = meta.tables['Articles']
-        categories_table = meta.tables['Categories']
+        engine = create_engine("sqlite:///db5.db")
+        metadata = MetaData()
+        articles_table = Table('Articles', metadata,
+                Column('articleID', Integer(), primary_key=True, index=True),
+                Column('name', String(200), default=None),
+                Column('author', String(100), default=None),
+                Column('publication', String(100), default=None),
+                Column('link', String(200), default=None),
+                Column('description', String(500), default=None),
+                Column('date', Date(), default=None),
+                Column('categoryID', ForeignKey('Categories.categoryID'))
+                )
+        categories_table = Table('Categories', metadata,
+                   Column('categoryID', Integer(), primary_key=True),
+                   Column('category_name', String(50), default=None)
+                   )
+        metadata.create_all(engine)
         connection = engine.connect()
-'''
- def __init__(self, id=0, name=None, year=0, month=0, category=None,
-                 link=None, description=None):
-        self.id = id
-        self.name = name
-        self.year = year
-        self.month = month
-        self.category = category
-        self.link = link
-        self.description = description'''
 
 def close():
     if connection:
         connection.close()
-        print('Database connection closed successfully')
-    
-#confirmed 
-#def make_category(row):
-#    return Category(row[0], row[1])
+        print('database connection closed successfully')
 
-#confirmed
 def make_category(row):
-    return Category(id=row.categoryID, name=row.name)
+    #print(row[0], row[1])
+    return Category(row[0], row[1])
 
-#confirmed
 #def make_article(row):
-#    return Article(row[0], row[1], row[2],
-#                   row[3], row[4], row[5],
-#                   row[6])
-
-#confirmed
-def make_article(row):
-    return Article(row["articleID"], row["name"], row["year"], row["month"],row["day"],
-            get_category(row["categoryID"]),row["link"], row["description"],
-            row["author"], row["publication"])
-
-#select just one field: s = select([articles_table.c.name])
-    
-#def get_article(article_id):
-#    s = select([articles_table]).where(articles_table.columns.articleID == article_id)
-#    rp = connection.execute(s)
-#    rp_tuple = tuple(rp)
-#    rp_tuple = tuple(rp_tuple[0])
+#    '''
+#    The variables in this code are incongruous with the rest of the program.
+#    result_zero was added to save time cutting and pasting.
+#    '''
 #    try:
-#        new_article = make_article(rp_tuple)
-#        return new_article
-#    except TypeError:
-#        return
+#        assert type(row == dict), 'Converting article to dictionary format.'
+#    #result_zero = dict(row)
+#        result_zero = row
+#        test = Article(ArticleID=result_zero['articleID'], category=Category.from_sqlalchemy(result_zero['categoryID'], result_zero['category_name']),
+#                       link = result_zero['link'], description= result_zero['description'], date=result_zero['date'], publication=result_zero['publication'],
+#                       author=result_zero['author'], name=result_zero['name'])
+#        return test
+#    except AssertionError:
+#        result_zero = dict(row)
+#        test = Article(ArticleID=result_zero['articleID'], category=Category.from_sqlalchemy(result_zero['categoryID'], result_zero['category_name']),
+#                       link = result_zero['link'], description= result_zero['description'], date=result_zero['date'], publication=result_zero['publication'],
+#                       author=result_zero['author'], name=result_zero['name'])
+#        return test
+
+#CREATE section - create articles and categories
+
+def add_article(article):
+    ins = articles_table.insert().values(
+            categoryID=article.category.CategoryID,
+            name=article.name,
+            date=article.date,
+            link=article.link,
+            description=article.description,
+            author = article.author,
+            publication = article.publication
+            )
+    result = connection.execute(ins)
+    print(result.rowcount)
+    
+def add_article_from_csv(article):
+    ins = articles_table.insert().values(
+            categoryID=article.category,
+            name=article.name,
+            #print(article.name, 'caught by database'),
+            date=article.date,
+            link=article.link,
+            description=article.description,
+            author = article.author,
+            publication = article.publication
+            )
+    result = connection.execute(ins)
+    print(result.rowcount)
+    
+def add_category(category):
+    category_name = category.name #takes a category object, so we have to get the name
+    ins = categories_table.insert().values(category_name=category_name)
+    result = connection.execute(ins)
+    print(result.rowcount)
+
+#READING SECTION - read/get articles and categories
     
 def get_article(article_id):
-    s = select([articles_table]).where(articles_table.columns.articleID == article_id)
+    print(articles_table.c.articleID)
+    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.articleID == article_id)
     rp = connection.execute(s).fetchone()
     try:
         #ew_article = make_article(rp)
-        new_article = Article.from_sqlalchemy(rp)
+        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
+                                              name=rp.name, date=rp.date, 
+                                              link=rp.link,
+                                              description=rp.description,
+                                              author=rp.author,
+                                              categoryID = rp.categoryID,
+                                              category_name = rp.category_name,
+                                              publication=rp.publication)
         return new_article
     except TypeError:
+        print('Type error')
         return
-
-#def get_category(category_id):
-#    #returns a single category
-#    s = select([categories_table.c.categoryID,
-#        categories_table.c.name]).where(categories_table.c.categoryID == category_id)
-#    rp = connection.execute(s)
+    except AttributeError:
+        print('Attribute error')
+        return
+    
+def get_articles_by_id_range(starting_id, ending_id):
+    print(articles_table.c.articleID)
+    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= starting_id, 
+                     articles_table.c.articleID <= ending_id))
+    rp = connection.execute(s).fetchall()
+    articles_by_id_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_id_range = [make_article(row) for row in rp]
+    return articles_by_id_range
 #    try:
-#        new_category = tuple(rp)[0] #take the single element out of nested tuple
-#        new_category = make_category(new_category)
-#        return new_category
-#    except Exception as e:
-#        print('Category not found:', e)
-        
+#        #ew_article = make_article(rp)
+#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
+#                                              name=rp.name, date=rp.date, 
+#                                              link=rp.link,
+#                                              description=rp.description,
+#                                              author=rp.author,
+#                                              categoryID = rp.categoryID,
+#                                              category_name = rp.category_name,
+#                                              publication=rp.publication)
+#        return new_article
+#    except TypeError:
+#        print('Type error')
+#        return
+#    except AttributeError:
+#        print('Attribute error')
+#        return
+
+def get_articles_by_date(article_date):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
+    rp = connection.execute(s).fetchall()
+    articles_by_date = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_date = [make_article(row) for row in rp]
+    
+    #for i in rp:
+        #print(i)
+    #a#rticles_by_date = [Article.from_sqlalchemy(i) for i in rp]
+    #return articles_by_date
+#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
+#                                              name=rp.name, date=rp.date, 
+#                                              link=rp.link,
+#                                              description=rp.description,
+#                                              author=rp.author,
+#                                              categoryID = rp.categoryID,
+#                                              category_name = rp.category_name,
+#                                              publication=rp.publication)
+#        articles_by_date.append(new_article)
+    return articles_by_date
+
+def get_articles_by_date_range(start_date, end_date):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date))
+    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
+    rp = connection.execute(s).fetchall()
+    articles_by_date_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    #articles_by_date = [make_article(row) for row in rp]
+    return articles_by_date_range
+
+def get_categories():
+    s = select([categories_table.c.categoryID, categories_table.c.category_name])
+    rp = connection.execute(s)
+    categories_collection=[]
+    for i in rp:
+        #print(i, type(i))
+        t = Category.from_sqlalchemy(categoryID=i[0], category_name=i[1])
+        t = make_category(i)
+        categories_collection.append(t)
+    return categories_collection
+
 def get_category(category_id):
     #returns a single category
     s = select([categories_table.c.categoryID,
         categories_table.c.category_name]).where(categories_table.c.categoryID == category_id)
     rp = connection.execute(s).fetchone()
     try:
-        new_category = make_category(rp)
+        new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
         return new_category
     except Exception as e:
         print('Category not found:', e)
         return
+
 
 def get_category_by_name(category_snippet):
     '''
@@ -115,7 +252,7 @@ def get_category_by_name(category_snippet):
     '''
     #returns a single category
     s = select([categories_table.c.categoryID,
-        categories_table.c.name]).where(categories_table.c.name.ilike("%{0}%".format(category_snippet)))
+        categories_table.c.category_name]).where(categories_table.c.category_name.ilike("%{0}%".format(category_snippet)))
     rp = connection.execute(s).fetchone()
     try:
         #new_category = tuple(rp)[0] #take the single element out of nested tuple
@@ -125,238 +262,299 @@ def get_category_by_name(category_snippet):
         print('Category not found:', e)
         return
 
-def get_categories():
-    s = select([categories_table.c.categoryID, categories_table.c.name])
+def get_articles_for_roundup(start_date, end_date, category_id):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
+                articles_table.c.categoryID, articles_table.c.link,
+                articles_table.c.description, articles_table.c.publication,
+                articles_table.c.author, categories_table.c.category_name]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, categories_table.c.categoryID==category_id))
+              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
     rp = connection.execute(s)
-    categories_collection = [make_category(cat) for cat in rp]
-    return categories_collection
-    #returns a list of categories
-
-def get_all_articles():
-    s = select([articles_table])
-    rp = connection.execute(s)
-    results = [make_article(i) for i in rp]
-    return results
-
-# =============================================================================
-# The find_article_by_name function is intended to allow for partial name search functionality
-# =============================================================================
+    #results = rp.fetchall()
+    articles_for_roundup = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    return articles_for_roundup
+#    for i in results:
+#        #print(i)
+#        #new_article = Article.from_sqlalchemy(i)
+#        articles_for_roundup.append(i)
+#
+#
+#        
+#    article_dict_list = [dict(i) for i in articles_for_roundup]
+#   # We make a dictionary so that we can make an article with it using
+#   # make_article
+#    
+#    new_articles = []
+#    for item in article_dict_list:
+#        new_articles.append(make_article(item))
+#        
+#    return new_articles
 
 def display_article_by_name(title_snippet):
     '''
     This function is intended to facilitate the search for articles using partial titles
     '''
-    columns = 
     stmt = select([articles_table]).\
     where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
     
     rp = connection.execute(stmt).fetchone()
     try:
-        article_by_name = make_article(rp)
+        #article_by_name = make_article(rp)
+        article_by_name = Article.from_sqlalchemy(articleID=rp.articleID, 
+                                                  name=rp.name, date=rp.date, 
+                                                  link=rp.link,
+                                                  description=rp.description,
+                                                  author=rp.author,
+                                                  categoryID = rp.categoryID,
+                                                  category_name = rp.category_name,
+                                                  publication= rp.publication)
         return article_by_name
     except Exception as e:
         print(e)
         return
     
-
-def find_article_by_name(title_snippet):
-    try:
-        display_article_by_name(title_snippet)
-    except Exception as e:
-        print(e)
-        return
-
-#def get_articles_by_category(category_id):
-#    s = select([articles_table]).where(articles_table.c.categoryID == category_id)
-#    rp = connection.execute(s)
-#    articles_by_category = [make_article(i) for i in rp]
-#    return articles_by_category
-
-def get_articles_by_category_id(category_id):
-    s = select([articles_table]).where(articles_table.c.categoryID == category_id)
-    rp = connection.execute(s)
-    articles_by_category = [make_article(i) for i in rp]
-    return articles_by_category
-
-def get_articles_by_year(year):
-    s = select([articles_table]).where(articles_table.c.year == year)
-    rp = connection.execute(s)
-    articles_by_year = [make_article(i) for i in rp]
-    return articles_by_year
-
-def get_articles_by_month(month, year):
-    s = select([articles_table]).where(and_(articles_table.c.month == month,
-              articles_table.c.year == year))
+def get_articles_by_name(title_snippet):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
     rp = connection.execute(s).fetchall()
-    articles_by_month = [make_article(i) for i in rp]
-    return articles_by_month
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
 
-
-def get_articles_by_date(day, month, year):
-    s = select([articles_table]).where(and_(articles_table.c.month == month,
-              articles_table.c.day == day, articles_table.c.year == year))
+def get_articles_by_description(description_snippet):
+    '''
+    This function is intended to display articles based on partial article
+    descriptions.
+    '''
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
+    #articles_by_name = [make_article(row) for row in rp]
+    #return articles_by_name
+    
+def get_date_range_undescribed_articles(start_date, end_date,
+                                        description_snippet='Not specified'):
+    '''
+    This function is intended to display articles based on partial article
+    descriptions.
+    '''
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(description_snippet))))
+    
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
+    
+def display_articles_by_category_id(start_date, end_date, category_id):
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
+                articles_table.c.categoryID, articles_table.c.link,
+                articles_table.c.description, articles_table.c.publication,
+                articles_table.c.author, categories_table.c.category_name]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, categories_table.c.categoryID==category_id))
+              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
     rp = connection.execute(s)
-    articles_by_date = [make_article(i) for i in rp]
-    return articles_by_date
-
-def get_articles_for_roundup(roundup_month, roundup_year, category_id):
-    s = select([articles_table]).where(and_(articles_table.c.month == roundup_month,
-              articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
-    rp = connection.execute(s)
-    articles_for_roundup = [make_article(i) for i in rp]
-    return articles_for_roundup
-
-def finalize_descriptions(month, year):
-    s = select([articles_table]).where(and_(articles_table.c.month == month,
-              articles_table.c.year == year, articles_table.c.description=='Not specified'))
-    rp = connection.execute(s)
-    articles_for_finalizing = [make_article(i) for i in rp]
-    return articles_for_finalizing
-
-#def yearly_roundup_articles2(roundup_year):
-#    pass
+    #results = rp.fetchall()
+    
+    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    return articles_by_categoryID
+    
+#    articles_for_roundup = []
+#    for i in results:
+#        #print(i)
+#        #new_article = Article.from_sqlalchemy(i)
+#        articles_for_roundup.append(i)
 #
-#def yearly_roundup_articles(roundup_year, category_id):
-#    s = select([articles_table]).where(and_(articles_table.c.year == roundup_year,
-#              articles_table.c.categoryID == category_id))
-#    rp = connection.execute(s)
-#    articles_for_roundup = [make_article(i) for i in rp]
-#    return articles_for_roundup
+#
+#        
+#    article_dict_list = [dict(i) for i in articles_for_roundup]
+#   # We make a dictionary so that we can make an article with it using
+#   # make_article
+#    
+#    new_articles = []
+#    for item in article_dict_list:
+#        new_articles.append(make_article(item))
+#        
+#    return new_articles
+        
+def display_articles_by_category_name(start_date, end_date, category_name_snippet):
+    print('category name snippet: ', category_name_snippet)
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
+                articles_table.c.categoryID, articles_table.c.link,
+                articles_table.c.description, articles_table.c.publication,
+                articles_table.c.author, categories_table.c.category_name]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(category_name_snippet))))
+              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
+    rp = connection.execute(s)
+    #results = rp.fetchall()
+    
+    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    return articles_by_categoryID
+    
+#    articles_for_roundup = []
+#    for i in results:
+#        #print(i)
+#        #new_article = Article.from_sqlalchemy(i)
+#        articles_for_roundup.append(i)
+#
+#
+#        
+#    article_dict_list = [dict(i) for i in articles_for_roundup]
+#   # We make a dictionary so that we can make an article with it using
+#   # make_article
+#    
+#    new_articles = []
+#    for item in article_dict_list:
+#        new_articles.append(make_article(item))
+#        
+#    return new_articles
+    
+def display_articles_by_publication(publication_snippet):
+    '''
+    This function is intended to display articles based on partial publication
+    titles.
+    '''
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.publication.ilike("%{0}%".format(publication_snippet)))
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
 
 def display_articles_by_author(author_snippet):
     '''
-    This function is intended to facilitate the search for articles using partial author names
+    This function is intended to display articles based on partial publication
+    titles.
     '''
-    stmt = select([articles_table]).\
-    where(articles_table.c.author.ilike("%{0}%".format(author_snippet)))
-    
-    rp = connection.execute(stmt).fetchall()
-    try:
-        articles_by_author = [make_article(i) for i in rp]
-        return articles_by_author
-    except Exception as e:
-        print(e)
-        return
+    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+              articles_table.c.author, articles_table.c.publication]
+    s = select(columns)
+    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.author.ilike("%{0}%".format(author_snippet)))
+    rp = connection.execute(s).fetchall()
+    articles_by_name = []
+    for i in rp:
+        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+                                                  name=i.name, date=i.date, 
+                                                  link=i.link,
+                                                  description=i.description,
+                                                  author=i.author,
+                                                  categoryID = i.categoryID,
+                                                  category_name = i.category_name,
+                                                  publication=i.publication)
+        articles_by_name.append(new_article)
+    return articles_by_name
 
-def display_articles_by_description(description_snippet):
-    '''
-    This function is intended to facilitate the search for articles using partial author names
-    '''
-    stmt = select([articles_table]).\
-    where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
-    
-    rp = connection.execute(stmt).fetchall()
-    try:
-        articles_by_description = [make_article(i) for i in rp]
-        return articles_by_description
-    except Exception as e:
-        print(e)
-        return
-
-def display_articles_by_publication(publication_snippet):
-    '''
-    This function is intended to facilitate the search for articles using partial author names
-    '''
-    stmt = select([articles_table]).\
-    where(articles_table.c.publication.ilike("%{0}%".format(publication_snippet)))
-    
-    rp = connection.execute(stmt).fetchall()
-    try:
-        articles_by_publication = [make_article(i) for i in rp]
-        return articles_by_publication
-    except Exception as e:
-        print(e)
-        return
-
-#will be used to generate reports of articles
-def get_article_count(category_id):
-    s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id)
-    rp = connection.execute(s)
-    record = rp.first()
-    return record.count_1
-
-def get_yearly_article_count(category_id, year):
-    #fix this
-    s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id and
-              articles_table.c.year == year)
-    rp = connection.execute(s)
-    record = rp.first()
-    return record.count_1
-
-
-def get_monthly_article_count_old(category_id, month, year):
-    s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id and
-              articles_table.c.month == month and articles_table.c.year == year)
-    rp = connection.execute(s)
-    record = rp.first()
-    print(record.count_1)
-    return record.count_1
-
-def get_monthly_article_count(category_id, month, year):
-    s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
-              articles_table.c.month == month, articles_table.c.year == year))
+def get_undescribed_article_count(start_date, end_date, description_snippet):
+    #def get_date_range_article_count(category_id, start_date, end_date):
+    s = select([func.count(articles_table)]).where(and_(articles_table.c.description.ilike("%{0}%".format(description_snippet)),
+              articles_table.c.date >= start_date, articles_table.c.date <= end_date))
     rp = connection.execute(s)
     record = rp.first()
     #print(record.count_1)
     return record.count_1
+    
 
-def get_undescribed_article_count(month, year):
-    s = select([func.count(articles_table)]).where(articles_table.c.month == month
-              and articles_table.c.year == year and articles_table.c.description == 'Not specified')
+def get_date_range_article_count(category_id, start_date, end_date):
+    s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
+              articles_table.c.date >= start_date, articles_table.c.date <= end_date))
     rp = connection.execute(s)
     record = rp.first()
+    #print(record.count_1)
+    #print(record.count_1)
     return record.count_1
 
-def add_article(article):
-    ins = articles_table.insert().values(
-            categoryID=article.category.id,
-            name=article.name,
-            year=article.year,
-            month=article.month,
-            day=article.day,
-            link=article.link,
-            description=article.description,
-            author = article.author,
-            publication = article.publication
-            )
-    result = connection.execute(ins)
-    
-def add_article_from_csv(article):
-    ins = articles_table.insert().values(
-            categoryID=article.category,
-            name=article.name,
-            #print(article.name)
-            year=article.year,
-            month=article.month,
-            day=article.day,
-            link=article.link,
-            description=article.description,
-            author = article.author,
-            publication = article.publication
-            )
-    result = connection.execute(ins)
+
+#UPDATE SECTION - Update articles and categories
 
 def update_article_name(article_id, new_article_name):
     u = update(articles_table).where(articles_table.c.articleID == article_id)
     u = u.values(name=new_article_name)
     result = connection.execute(u)
     print(result.rowcount)
-
-# =============================================================================
-# def update_article_name(article_id, article_name):
-#    sql = '''UPDATE article SET name = ?
-#            WHERE articleID = ?'''
-#    with closing(conn.cursor()) as c:
-#        c.execute(sql, (article_name, article_id))
-#        conn.commit()
-# =============================================================================
-
-def update_article_category(article_id, new_category):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(categoryID=new_category)
-    result = connection.execute(u)
-    print(result.rowcount)
-
 
 def update_article_description(article_id, new_description):
     u = update(articles_table).where(articles_table.c.articleID == article_id)
@@ -375,65 +573,35 @@ def update_article_publication(article_id, new_publication):
     u = u.values(publication = new_publication)
     result = connection.execute(u)
     print(result.rowcount)
-
-def update_article_date(article_id, new_day, new_month, new_year):
+    
+def update_article_category(article_id, new_category):
     u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(day = new_day, month = new_month, year = new_year)
+    u = u.values(categoryID=new_category)
     result = connection.execute(u)
     print(result.rowcount)
 
+def update_article_date(article_id, new_date):
+    u = update(articles_table).where(articles_table.c.articleID == article_id)
+    u = u.values(date=new_date)
+    result = connection.execute(u)
+    print(result.rowcount)
+
+#DELETE SECTION - Delete articles and categories
+    
 def delete_article(article_id):
     u = delete(articles_table).where(articles_table.c.articleID == article_id)
     result = connection.execute(u)
     print(result.rowcount)
     
-def add_category(category):
-    category_name = category.name #takes a category object, so we have to get the name
-    ins = categories_table.insert().values(name=category_name)
-    result = connection.execute(ins)
-    print(result.rowcount)
-    
-def update_category(category_id, new_category_name):
-    u = update(categories_table).where(categories_table.c.categoryID == category_id)
-    u = u.values(name=new_category_name)
-    result = connection.execute(u)
-    print(result.rowcount)
-
 def delete_category(category_id):
     u = delete(categories_table).where(categories_table.c.categoryID == category_id)
     result = connection.execute(u)
     print(result.rowcount)
 
- 
 if __name__ == '__main__':
     connect()
 
-'''
-articleID
-categoryID
-name
-year
-month
-link
-discipline
-'''
 
-# we can reflect it ourselves from a database, using options
-# such as 'only' to limit what tables we look at...
-#metadata.reflect(engine, only=['user', 'address'])
-
-# ... or just define our own Table objects with it (or combine both)
-#Table('user_order', metadata,
-#                Column('id', Integer, primary_key=True),
-#                Column('user_id', ForeignKey('user.id'))
-#            )
-
-# we can then produce a set of mappings from this MetaData.
-#Base = automap_base(metadata=metadata)
-#
-## calling prepare() just sets up mapped classes and relationships.
-#Base.prepare(engine, reflect=True)
-
-# mapped classes are ready
-#User, Address, Order = Base.classes.user, Base.classes.address,\
-#    Base.classes.user_order
+#engine = create_engine('sqlite:///db2.db')
+#metadata.create_all(engine)
+#connection = engine.connect()
