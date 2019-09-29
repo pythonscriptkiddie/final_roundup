@@ -1020,8 +1020,9 @@ will return to the main menu.
         
             finalize_article_descriptions(start_date=start_date, end_date=end_date)
         except TypeError:
-            print('Finalize command entered incorrectly')
-            print('Enter finalize [m] [y] to finalize descriptions')
+            print('complete_desc command entered incorrectly')
+        except ValueError:
+            print('complete_desc command entered incorrectly')
             
     
     def help_complete_desc(self):
