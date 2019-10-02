@@ -6,7 +6,6 @@
 '''
 
 import db
-#import _db.test_dal2 as dal
 from objects import Article, Category
 import roundup_docx2 as roundup_docx
 import BTCInput as btc
@@ -18,6 +17,7 @@ import sys
 import news_article as na
 import datetime
 import tqdm
+from matplotlib import pyplot as plt
 from dateutil.parser import parse
 
 
@@ -35,8 +35,6 @@ def display_categories(command=''):
     print("CATEGORIES")
     categories = db.get_categories()  
     for category in categories:
-        #print(category)
-    #for category in categories:
         print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
     print()
 
@@ -114,13 +112,14 @@ def display_articles_by_category_name(category_snippet, start_date, end_date):
         display_articles(articles, search_category.category_name.upper())
  
 def search_single_date(article_date):
-    article_date = parse(article_date)
-    new_date = article_date.date()
-    print(type(new_date))
+    assert type(article_date) == datetime.date
+    #article_date = parse(article_date)
+    #new_date = article_date.date()
+    #print(type(new_date))
     if article_date == None:
         print('Date entered incorrectly')
     else:
-        articles = db.get_articles_by_date(new_date)
+        articles = db.get_articles_by_date(article_date)
         formatted_date = article_date.strftime("%m/%d/%Y")
         #print(articles)
         display_articles(articles, formatted_date)
@@ -460,9 +459,9 @@ def finalize_article_descriptions(start_date, end_date):
                                                          start_date=start_date,
                                                          end_date=end_date)
     undescribed_articles = len(undescribed)
-    print('{0} undescribed articles'.format(undescribed_articles))
+    print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
-        print('{0} undescribed articles'.format(undescribed_articles))
+        print('Undescribed articles remaining: {0}'.format(undescribed_articles))
         update_article_description(article.ArticleID)
         undescribed_articles -= 1
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
@@ -507,7 +506,33 @@ def finalize_title_updates(month, year):
             print('strip titles cancelled')
             #display_title()
             break
-            
+
+def get_category_chart(start_date, end_date):
+    #get the data from the database
+    #calculate how many of the articles have been described
+    categories = db.get_categories()
+    categories = db.get_categories()
+    start_date_pretty = start_date.strftime("%m/%d/%Y")
+    end_date_pretty = end_date.strftime("%m/%d/%Y")
+    #total_articles = len(db.get_articles_by_date_range(start_date,
+    #                                                   end_date))
+    category_info = [[category.category_name,
+                     db.get_date_range_article_count(category.CategoryID,
+                                                  start_date,
+                                                  end_date)] for category in categories]
+    category_names = [i[0] for i in category_info]
+    article_numbers = [i[1] for i in category_info]
+    #create bar chart
+    plt.bar(range(len(category_names)), article_numbers)
+    plt.title('Articles per category from {0} to {1}'.format(start_date_pretty,
+              end_date_pretty))
+    plt.ylabel('# of articles') #label the y-axis
+               
+    #label x-axis with movies at bar centers
+    plt.xticks(range(len(category_names)), category_names)
+    plt.show()
+    
+               
 def get_date_range_category_stats(start_date, end_date):
     '''
     The roundups must have at least a few articles in each category. This
@@ -798,32 +823,35 @@ def get_stats(start_date=None, end_date=None):
         return
     
 def split_command(command):
-    if type(command) != int:
-        try:
-            split_command = command.split(' ')
-            return split_command[0], split_command[1]
-        except Exception as e:
-            print(e)
+    #if type(command) != int:
+    try:
+        split_command = command.split(' ')
+        return split_command[0], split_command[1]
+    except Exception as e:
+        print(e)
         
 def parse_arg(arg):
     'Convert a series of zero or more numbers to an argument tuple'
     return tuple(map(int, arg.split()))
 
+
 def parse_dates(arg):
     'Convert a series of zero or more numbers to an argument tuple of dates'
     try:
         #Let's try to split the argument using space as a separator
-        return tuple(map(parse, arg.split()))
+        dates = tuple(map(parse, arg.split()))
+        dates = [i.date() for i in dates]
+        return dates
     except ValueError:
         print('Invalid date format, please enter dates with " " as a separator')
         return
     except TypeError:
         print('Invalid date format')         
-        return 
+        return
 
 class RGenCMD(cmd.Cmd):
         
-    intro = "Welcome to RoundupGenerator 3.0"
+    intro = "Welcome to RoundupGenerator 3.1"
     prompt = "(RoundupGenerator) "
     entry = ""
            
@@ -867,29 +895,38 @@ search_id 18 will find the article with ID 18''')
             
     def do_search_date(self, command):
         try:
-            search_single_date(command)
+            dates = parse_dates(command)
+            if len(dates) == 1:
+                search_single_date(dates[0])
+            elif len(dates) == 2:
+                start_date, end_date = dates[0], dates[1]
+                if start_date > end_date:
+                    print('start date must come before end date') #starting date must come first
+                    return
+                search_date_range(start_date, end_date)
         except ValueError as v:
             print(v)
         
     def help_search_date(self):
-        print('Enter search_date [date]')
+        print('Enter search_date [date] to search for a single date')
         print('e.g.:')
         print('search_date 05/02/2019')
         print('search_date 06/14/2019')
+        print('Enter search_date [date_1] [date_2] to search a range of dates')
         
-    def do_search_date_range(self, command):
-        try:
-            start_date, end_date = parse_dates(command)
-            search_date_range(start_date, end_date)
-        except ValueError:
-            print('Date range entered incorrectly, return to main menu.')
-        except TypeError:
-            print('Date range entered incorrectly, return to main menu')
-
-    def help_search_date_range(self):
-        print('Enter search_date_range without any suffix')
-        print('A prompt will appear on screen')
-        print('allowing entry of start and ending dates')
+#    def do_search_date_range(self, command):
+#        try:
+#            start_date, end_date = parse_dates(command)
+#            search_date_range(start_date, end_date)
+#        except ValueError:
+#            print('Date range entered incorrectly, return to main menu.')
+#        except TypeError:
+#            print('Date range entered incorrectly, return to main menu')
+#
+#    def help_search_date_range(self):
+#        print('Enter search_date_range without any suffix')
+#        print('A prompt will appear on screen')
+#        print('allowing entry of start and ending dates')
         
     def do_search_author(self, command):
         display_articles_by_author(command)
@@ -1012,6 +1049,13 @@ will return to the main menu.
     def help_stats(self):
         print('stats displays article data for a specified date range')
         print('Enter "stats [starting_date] [ending_date]" to print stats')
+        
+    def do_category_chart(self, command):
+        try:
+            start_date, end_date = parse_dates(command)
+            get_category_chart(start_date, end_date)
+        except Exception as e:
+            print(e)
     
     def do_complete_desc(self, command):
         #command = split_command(command)

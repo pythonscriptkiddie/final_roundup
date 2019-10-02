@@ -228,7 +228,7 @@ def get_categories():
     for i in rp:
         #print(i, type(i))
         t = Category.from_sqlalchemy(categoryID=i[0], category_name=i[1])
-        t = make_category(i)
+        #t = make_category(i)
         categories_collection.append(t)
     return categories_collection
 
@@ -256,7 +256,8 @@ def get_category_by_name(category_snippet):
     rp = connection.execute(s).fetchone()
     try:
         #new_category = tuple(rp)[0] #take the single element out of nested tuple
-        new_category = make_category(rp)
+        #new_category = make_category(rp)
+        new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
         return new_category
     except Exception as e:
         print('Category not found:', e)
@@ -543,8 +544,6 @@ def get_date_range_article_count(category_id, start_date, end_date):
               articles_table.c.date >= start_date, articles_table.c.date <= end_date))
     rp = connection.execute(s)
     record = rp.first()
-    #print(record.count_1)
-    #print(record.count_1)
     return record.count_1
 
 
