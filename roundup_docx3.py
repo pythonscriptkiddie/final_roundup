@@ -7,8 +7,7 @@ Created on Thu May 23 13:45:44 2019
 """
 import docx
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
-from objects import Article
-#from objects import Article
+#from objects.objects import Article, Category
 
 #class ExportedCategory:
 #    def __init__(self, name, articles=[]):
@@ -62,8 +61,7 @@ def add_article(document, article):
     try:
         new_paragraph = document.add_paragraph('') #add blank paragraph that we append the text to
         add_hyperlink(paragraph=new_paragraph, text=article.name, url=article.link)
-        #print(Article.get_date_formatted(article))
-        new_paragraph.add_run(' ({0}) '.format(Article.get_date_formatted(article))) #blank space between the link and the description
+        new_paragraph.add_run(' ({0} {1} {2}) '.format(article.day, article.month_text, article.year)) #blank space between the link and the description
         new_paragraph.add_run(article.description)
     except Exception as e:
         print(e)

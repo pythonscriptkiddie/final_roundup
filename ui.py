@@ -16,7 +16,7 @@ import cmd
 import sys
 import news_article as na
 import datetime
-import tqdm
+#import tqdm
 from matplotlib import pyplot as plt
 from dateutil.parser import parse
 
@@ -30,13 +30,15 @@ def display_menu(title, menu_items, end='   '):
     for i in menu_items:
         print(i, end=end)
 
-def display_categories(command=''):
-    del command
-    print("CATEGORIES")
-    categories = db.get_categories()  
-    for category in categories:
-        print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
-    print()
+#def display_categories(command=''):
+#    del command
+#    Category.display_categories()
+#    del command
+#    print("CATEGORIES")
+#    categories = db.get_categories()  
+#    for category in categories:
+#        print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
+#    print()
 
 def display_single_article(article, title_term):
     template ='''
@@ -126,7 +128,7 @@ def search_single_date(article_date):
         
 def search_date_range(start_date, end_date):
     try:
-        assert start_date < end_date
+        assert start_date <= end_date
     except AssertionError:
         print('Start date must come before end date')
         return
@@ -148,7 +150,7 @@ def display_article_by_id(article_id=None):
         
 def display_article_by_id_range(starting_id, ending_id):
     try:
-        assert starting_id < ending_id
+        assert starting_id <= ending_id
     except AssertionError:
         print('Starting ID must be less than ending ID. Return to main menu.')
         return
@@ -183,111 +185,119 @@ def display_articles_by_publication(publication_snippet=None):
             display_articles(publications, "PUBLICATION: " + str(publications[0].publication))
         except IndexError as e:
             display_articles(publications, "PUBLICATION: " + str('Error: {0}'.format(e)))
-            
+
 def add_article_from_newspaper(link):
-    '''
-    Adds an article from the newspaper module after downloading it
-    '''
-    for i in tqdm.tqdm(range(1)):
-        try:
-            newNewsItem = na.get_article_from_url(link)
-        except:
-            print('Article download failed, invalid URL')
-            print('Returning to main menu')
-            return
-    print(newNewsItem)
-    try:
-        name = newNewsItem.title #get the title for the article
-    except Exception as e:
-        print(e)
-        name = btc.read_text('Please enter title: ')
-        #get article author
-    try:
-        author = ' '.join(newNewsItem.authors)
-        #get article publication
-    except Exception as e:
-        print(e)
-        author = btc.read_text('Please enter author: ')
-    try:
-        #works for most websites, but not Sudan Tribune
-        publication = newNewsItem.meta_data['og']['site_name']
-    except Exception as e:
-        print(e)
-        publication = btc.read_text('Please enter publication: ')
-    try:
-        year = newNewsItem.publish_date.year
-        month = newNewsItem.publish_date.month
-        day = newNewsItem.publish_date.day
-        new_date = datetime.date(day=day, month=month, year=year)
-    except Exception as e:
-        print(e)
-        has_date = False
-        while has_date == False:
-            try:
-                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
-                new_date = parse(new_date)
-                new_date = new_date.date()
-                has_date = True
-            except Exception as e:
-                print(e)
-        
-    except Exception as e:
-        print('invalid date', e)
-    try:
-        summary = newNewsItem.summary
-    except Exception as e:
-        print(e)
-        print('Summary download failed')
-        summary = 'Summary not found'
-    try:
-        keywords = ', '.join(newNewsItem.keywords)
-    except Exception as e:
-        print(e)
-        print('Keyword download failed')
-        keywords= 'keywords not found'
-    print('TITLE - {0} - AUTHOR {1}'.format(name, author))
-    print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
-    print('KEYWORDS: ', keywords)
-    display_categories()
-    category_id = btc.read_text("Category ID: ")
-    category = db.get_category(category_id)
-    if category == None:
-        print('There is no category with that ID. article NOT added.\n')
-        return
-    description_choice = btc.read_text('View article description? y/n: ')
-    if description_choice == 'y':
-        print('Title: {0}'.format(name))
-        print('Summary: {0}'.format(summary))
-        print('Keywords: {0}'.format(keywords))
-    description = btc.read_text("Description or '.' to cancel: ")
-    
-    if description == ".":
-        return
-    else:
-        article = Article(name=name, date=new_date,
-                  category=category, link=link, description=description,
-                  author=author, publication=publication)
-    db.add_article(article)    
-    print(name + " was added to database.\n")
+    new_article = Article.from_newspaper(link)
+    db.add_article(new_article)    
+    print(new_article.name + " was added to database.\n")
+            
+#def add_article_from_newspaper(link):
+#    '''
+#    Adds an article from the newspaper module after downloading it
+#    '''
+#    for i in tqdm.tqdm(range(1)):
+#        try:
+#            newNewsItem = na.get_article_from_url(link)
+#        except:
+#            print('Article download failed, invalid URL')
+#            print('Returning to main menu')
+#            return
+#    print(newNewsItem)
+#    try:
+#        name = newNewsItem.title #get the title for the article
+#    except Exception as e:
+#        print(e)
+#        name = btc.read_text('Please enter title: ')
+#        #get article author
+#    try:
+#        author = ' '.join(newNewsItem.authors)
+#        #get article publication
+#    except Exception as e:
+#        print(e)
+#        author = btc.read_text('Please enter author: ')
+#    try:
+#        #works for most websites, but not Sudan Tribune
+#        publication = newNewsItem.meta_data['og']['site_name']
+#    except Exception as e:
+#        print(e)
+#        publication = btc.read_text('Please enter publication: ')
+#    try:
+#        year = newNewsItem.publish_date.year
+#        month = newNewsItem.publish_date.month
+#        day = newNewsItem.publish_date.day
+#        new_date = datetime.date(day=day, month=month, year=year)
+#    except Exception as e:
+#        print(e)
+#        has_date = False
+#        while has_date == False:
+#            try:
+#                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+#                new_date = parse(new_date)
+#                new_date = new_date.date()
+#                has_date = True
+#            except Exception as e:
+#                print(e)
+#        
+#    except Exception as e:
+#        print('invalid date', e)
+#    try:
+#        summary = newNewsItem.summary
+#    except Exception as e:
+#        print(e)
+#        print('Summary download failed')
+#        summary = 'Summary not found'
+#    try:
+#        keywords = ', '.join(newNewsItem.keywords)
+#    except Exception as e:
+#        print(e)
+#        print('Keyword download failed')
+#        keywords= 'keywords not found'
+#    print('TITLE - {0} - AUTHOR {1}'.format(name, author))
+#    print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
+#    print('KEYWORDS: ', keywords)
+#    display_categories()
+#    category_id = btc.read_text("Category ID: ")
+#    category = db.get_category(category_id)
+#    if category == None:
+#        print('There is no category with that ID. article NOT added.\n')
+#        return
+#    description_choice = btc.read_text('View article description? y/n: ')
+#    if description_choice == 'y':
+#        print('Title: {0}'.format(name))
+#        print('Summary: {0}'.format(summary))
+#        print('Keywords: {0}'.format(keywords))
+#    description = btc.read_text("Description or '.' to cancel: ")
+#    
+#    if description == ".":
+#        return
+#    else:
+#        article = Article(name=name, date=new_date,
+#                  category=category, link=link, description=description,
+#                  author=author, publication=publication)
+#    db.add_article(article)    
+#    print(name + " was added to database.\n")
+#
+#def manual_add(link=None):
+#    if (link == None) or (not link):
+#        print('Link', link)
+#        print('No link supplied, manual_add must be followed by link.')
+#        return
+#    else:
+#        print('Manual article creation/n')
+#        print('Link: {0}'.format(link))
+#        Category.display_categories()
+#        new_article_category = btc.read_int('Enter category for article: ')
+#        category = db.get_category(new_article_category)
+#        assert category != None
+#        new_article = Article.from_input(link=link, category=category)
+#        if new_article == None:
+#            print('Article creation cancelled. Returning to main menu.')
+#            return
+#        db.add_article(new_article)
+#        print(new_article.title + " was added to database.\n")
 
 def manual_add(link=None):
-    if (link == None) or (not link):
-        print('Link', link)
-        print('No link supplied, manual_add must be followed by link.')
-        return
-    else:
-        print('Manual article creation/n')
-        print('Link: {0}'.format(link))
-        display_categories()
-        new_article_category = btc.read_int('Enter category for article: ')
-        category = db.get_category(new_article_category)
-        assert category != None
-        new_article = Article.from_input(link=link, category=category)
-        if new_article == None:
-            print('Article creation cancelled. Returning to main menu.')
-            return
-        db.add_article(new_article)
-        print(new_article.title + " was added to database.\n")
+    Article.manual_add(link)
     
 
 def update_article_name(article_id):
@@ -662,6 +672,9 @@ def delete_article(article_id):
         print(e, 'Article id not found')
 
 def add_category():
+    '''
+    Planned change: move manual category creation code to the objects.py file
+    '''
     new_category = Category.from_input()
     if new_category.category_name != '.':
         db.add_category(new_category)
@@ -729,7 +742,8 @@ def export_roundup_by_date():
         #display_title()
         
 def export_roundup_by_category():
-    display_categories()
+    #display_categories()
+    Category.display_categories()
     roundup_categories = db.get_categories()
     categories_remaining = len(roundup_categories)
     categories_for_roundup = []
@@ -754,21 +768,31 @@ def export_roundup_by_category():
         print('Roundup export cancelled. Return to main menu.\n')
     
 
-def get_articles_by_category(category=None):
+def get_articles_by_category(category=None, start_date=None, end_date=None):
+    #print('get_articles_by_category called')
+#    print(category.isnumeric())
+    #print(start_date)
+    #print(end_date)
     if not category:
         category = btc.read_text("Enter category name or number here:  ")
-    start_date = btc.read_text("Enter starting date: ")
-    end_date = btc.read_text("Enter ending date: ")
-    start_date = parse(start_date)
-    end_date = parse(end_date)
+    if not start_date:
+        start_date = btc.read_text("Enter starting date: ")
+        start_date = parse(start_date)
+    if not end_date:
+        end_date = btc.read_text("Enter ending date: ")
+        end_date = parse(end_date)
+    #start_date = parse(start_date)
+    #end_date = parse(end_date)
     if category.isalpha() == True:
         print('category name detected')
-        display_articles_by_category_name(category, start_date, end_date)
+        display_articles_by_category_name(category_snippet=category,
+                                          start_date=start_date,
+                                          end_date=end_date)
     elif category.isnumeric() == True:
         print('numeric category ID detected')
         #try:
             #category_id = int(category)
-        display_articles_by_category_id(category, start_date, end_date)
+        display_articles_by_category_id(category, start_date=start_date, end_date=end_date)
             
         #except:
             #print('Article search cancelled. Return to main menu.\n')
@@ -781,7 +805,7 @@ category_menu = ['add_cat - Add a category', 'update_cat - Update category name'
 def category_interface(command):
     category_commands = {'add': add_category,
                        'update': update_category,
-                       'display': display_categories,
+                       #'display': display_categories,
                        'delete' : delete_category,
                        'stats': get_articles_by_category,
                        }
@@ -822,10 +846,10 @@ def get_stats(start_date=None, end_date=None):
         print(e)
         return
     
-def split_command(command):
+def split_command(command, splitter = ' '):
     #if type(command) != int:
     try:
-        split_command = command.split(' ')
+        split_command = command.split(splitter)
         return split_command[0], split_command[1]
     except Exception as e:
         print(e)
@@ -833,7 +857,6 @@ def split_command(command):
 def parse_arg(arg):
     'Convert a series of zero or more numbers to an argument tuple'
     return tuple(map(int, arg.split()))
-
 
 def parse_dates(arg):
     'Convert a series of zero or more numbers to an argument tuple of dates'
@@ -886,12 +909,12 @@ search_id 18 will find the article with ID 18''')
         print('enter search_name [name snippet] to search by name')
         print('search_name will find all the articles in ')
         
-    def do_search_category(self, command):
-        get_articles_by_category(command)
-        
-    def help_search_category(self):
-        print('Enter search_category [name or id] to find a category')
-        print('Takes either the category name or category ID as input')
+#    def do_search_category(self, command):
+#        get_articles_by_category(command)
+#        
+#    def help_search_category(self):
+#        print('Enter search_category [name or id] to find a category')
+#        print('Takes either the category name or category ID as input')
             
     def do_search_date(self, command):
         try:
@@ -906,7 +929,33 @@ search_id 18 will find the article with ID 18''')
                 search_date_range(start_date, end_date)
         except ValueError as v:
             print(v)
-        
+    
+    def do_search_category(self, command):
+        try:
+            value, dates = split_command(command, splitter = '-')
+            value = value.lstrip()
+            value = value.rstrip()
+            start_date, end_date = parse_dates(dates)
+            get_articles_by_category(category=value, start_date=start_date,
+                                     end_date=end_date)
+        except TypeError as e:
+            print(e)
+        except ValueError as e:
+            print(e)
+            
+    def help_search_category(self):
+        print('''
+        Prototype advanced category search.
+        Enter 'adv_cat_search [id/name] - [start date] [end_date]'
+        ''')
+        #result = parse_arg_with_date(command)
+        #print(len(result))
+        ##for i in result:
+        #    print(type(i))
+        #get_articles_by_category(category=result[0], start_date = result[1],
+                                 #end_date = result[2])
+        #print('Command is,', result)
+    
     def help_search_date(self):
         print('Enter search_date [date] to search for a single date')
         print('e.g.:')
@@ -958,7 +1007,8 @@ search_id 18 will find the article with ID 18''')
 without any suffix''')
     
     def do_add(self, command):
-        add_article_from_newspaper(link=command)
+        Article.add_from_newspaper(link=command)
+        #add_article_from_newspaper(link=command)
         
     def help_add(self):
         print('''Enter add [link] to add articles:
@@ -1085,7 +1135,7 @@ export finalize - finalize title stripping
 export finish_desc - finish article descriptions''')
         
     def do_display_categories(self, command):
-        display_categories(command)
+        Category.display_categories(command)
         
     def help_display_categories(self):
         print('Displays a list of the currently available categories.')
