@@ -284,22 +284,6 @@ def get_articles_for_roundup(start_date, end_date, category_id):
                                               publication=row.publication)
                                                 for row in rp]
     return articles_for_roundup
-#    for i in results:
-#        #print(i)
-#        #new_article = Article.from_sqlalchemy(i)
-#        articles_for_roundup.append(i)
-#
-#
-#        
-#    article_dict_list = [dict(i) for i in articles_for_roundup]
-#   # We make a dictionary so that we can make an article with it using
-#   # make_article
-#    
-#    new_articles = []
-#    for item in article_dict_list:
-#        new_articles.append(make_article(item))
-#        
-#    return new_articles
 
 def display_article_by_name(title_snippet):
     '''
