@@ -101,7 +101,8 @@ def display_articles_by_category_id(category_id, start_date, end_date):
         articles = db.display_articles_by_category_id(start_date, end_date, category_id)
         print('Number of articles:', len(articles))
         display_articles(articles, category.category_name.upper())
-        print('Total articles: {0}'.format(db.get_date_range_article_count(category_id, start_date, end_date)))
+        print('Total articles: {0}'.format(db.get_article_count(category_id=category_id,
+              start_date=start_date, end_date=end_date)))
 
 def display_articles_by_category_name(category_snippet, start_date, end_date):
     search_category = db.get_category_by_name(category_snippet)
@@ -417,9 +418,9 @@ def get_category_chart(start_date, end_date):
     #total_articles = len(db.get_articles_by_date_range(start_date,
     #                                                   end_date))
     category_info = [[category.category_name,
-                     db.get_date_range_article_count(category.CategoryID,
-                                                  start_date,
-                                                  end_date)] for category in categories]
+                     db.get_article_count(category_id=category.CategoryID,
+                                                  start_date=start_date,
+                                                  end_date=end_date)] for category in categories]
     category_names = [i[0] for i in category_info]
     article_numbers = [i[1] for i in category_info]
     #create bar chart
@@ -440,12 +441,12 @@ def get_date_range_category_stats(start_date, end_date):
     end date input by the user.
     '''
     categories = db.get_categories()
-    total_articles = len(db.get_articles_by_date_range(start_date,
-                                                       end_date))
+    total_articles = db.get_article_count(start_date=start_date,
+                                                       end_date=end_date)
     category_ids = [[category.CategoryID, category.category_name,
-                     db.get_date_range_article_count(category.CategoryID,
-                                                  start_date,
-                                                  end_date)] for category in categories]
+                     db.get_article_count(category_id=category.CategoryID,
+                                                  start_date=start_date,
+                                                  end_date=end_date)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
     undescribed_articles = db.get_undescribed_article_count(description_snippet='Not specified',
                                                             start_date = start_date,
@@ -589,7 +590,9 @@ def update_category(category_id=0):
 
 def delete_category():
     category_id = int(input("category ID: "))
-    articles_in_category = db.get_category_article_count(category_id)
+    articles_in_category = db.get_article_count(category_id=category_id,
+                                                           start_date=None,
+                                                           end_date=None)
     if articles_in_category > 0:
         print('Category contains articles, cannot be deleted')
     elif articles_in_category == 0:

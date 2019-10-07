@@ -463,24 +463,6 @@ def display_articles_by_category_name(start_date, end_date, category_name_snippe
                                                 for row in rp]
     return articles_by_categoryID
     
-#    articles_for_roundup = []
-#    for i in results:
-#        #print(i)
-#        #new_article = Article.from_sqlalchemy(i)
-#        articles_for_roundup.append(i)
-#
-#
-#        
-#    article_dict_list = [dict(i) for i in articles_for_roundup]
-#   # We make a dictionary so that we can make an article with it using
-#   # make_article
-#    
-#    new_articles = []
-#    for item in article_dict_list:
-#        new_articles.append(make_article(item))
-#        
-#    return new_articles
-    
 def display_articles_by_publication(publication_snippet):
     '''
     This function is intended to display articles based on partial publication
@@ -539,19 +521,21 @@ def get_undescribed_article_count(start_date, end_date, description_snippet):
     return record.count_1
     
 
-def get_date_range_article_count(category_id, start_date, end_date):
-    s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
-              articles_table.c.date >= start_date, articles_table.c.date <= end_date))
+def get_article_count(category_id=None, start_date=None, end_date=None):
+    if (start_date == None) and (end_date == None):
+        s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id)
+    elif (category_id == None):
+        s = select([func.count(articles_table)]).where(and_(articles_table.c.date >= start_date,
+                  articles_table.c.date <= end_date))
+    elif (category_id==None) and (start_date==None) and (end_date==None):
+        print('Invalid entry')
+        return
+    else:    
+        s = select([func.count(articles_table)]).where(and_(articles_table.c.categoryID == category_id,
+                  articles_table.c.date >= start_date, articles_table.c.date <= end_date))
     rp = connection.execute(s)
     record = rp.first()
     return record.count_1
-
-def get_category_article_count(category_id):
-    s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id)
-    rp = connection.execute(s)
-    record = rp.first()
-    return record.count_1
-
 
 #UPDATE SECTION - Update articles and categories
 
