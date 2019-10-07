@@ -565,9 +565,10 @@ def add_category():
     '''
     Planned change: move manual category creation code to the objects.py file
     '''
-    new_category = Category.from_input()
-    if new_category.category_name != '.':
-        db.add_category(new_category)
+    Category.manual_add()
+    #new_category = Category.from_input()
+    #if new_category.category_name != '.':
+    #ds    db.add_category(new_category)
 
         
 def update_category(category_id=0):
@@ -588,10 +589,10 @@ def update_category(category_id=0):
 
 def delete_category():
     category_id = int(input("category ID: "))
-    articles_in_category = db.get_articles_by_category_id(category_id)
-    if len(articles_in_category) > 0:
+    articles_in_category = db.get_category_article_count(category_id)
+    if articles_in_category > 0:
         print('Category contains articles, cannot be deleted')
-    elif len(articles_in_category) == 0:
+    elif articles_in_category == 0:
         delete_choice = btc.read_float_ranged('Press 1 to delete, 2 to cancel: ', 1, 2)
         if delete_choice == 1:
             db.delete_category(category_id)

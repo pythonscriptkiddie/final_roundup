@@ -546,6 +546,12 @@ def get_date_range_article_count(category_id, start_date, end_date):
     record = rp.first()
     return record.count_1
 
+def get_category_article_count(category_id):
+    s = select([func.count(articles_table)]).where(articles_table.c.categoryID == category_id)
+    rp = connection.execute(s)
+    record = rp.first()
+    return record.count_1
+
 
 #UPDATE SECTION - Update articles and categories
 

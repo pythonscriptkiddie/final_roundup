@@ -411,11 +411,13 @@ class Category:
             print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
         print()
 
+    @staticmethod
     def manual_add():
         '''
-        Planned change: move manual category creation code to the objects.py file
+        Obtains a new Category object from the Category.from_input() method and
+        adds it to the database.
         '''
         new_category = Category.from_input()
         if new_category.category_name != '.':
             db.add_category(new_category)        
-    
+            print('New category created: {0}'.format(new_category.name))
