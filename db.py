@@ -43,28 +43,10 @@ def close():
         print('database connection closed successfully')
 
 def make_category(row):
-    #print(row[0], row[1])
+    '''
+    This function takes a row from the database and makes a category.
+    '''
     return Category(row[0], row[1])
-
-#def make_article(row):
-#    '''
-#    The variables in this code are incongruous with the rest of the program.
-#    result_zero was added to save time cutting and pasting.
-#    '''
-#    try:
-#        assert type(row == dict), 'Converting article to dictionary format.'
-#    #result_zero = dict(row)
-#        result_zero = row
-#        test = Article(ArticleID=result_zero['articleID'], category=Category.from_sqlalchemy(result_zero['categoryID'], result_zero['category_name']),
-#                       link = result_zero['link'], description= result_zero['description'], date=result_zero['date'], publication=result_zero['publication'],
-#                       author=result_zero['author'], name=result_zero['name'])
-#        return test
-#    except AssertionError:
-#        result_zero = dict(row)
-#        test = Article(ArticleID=result_zero['articleID'], category=Category.from_sqlalchemy(result_zero['categoryID'], result_zero['category_name']),
-#                       link = result_zero['link'], description= result_zero['description'], date=result_zero['date'], publication=result_zero['publication'],
-#                       author=result_zero['author'], name=result_zero['name'])
-#        return test
 
 #CREATE section - create articles and categories
 
@@ -149,23 +131,6 @@ def get_articles_by_id_range(starting_id, ending_id):
                                                 for row in rp]
     #articles_by_id_range = [make_article(row) for row in rp]
     return articles_by_id_range
-#    try:
-#        #ew_article = make_article(rp)
-#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
-#                                              name=rp.name, date=rp.date, 
-#                                              link=rp.link,
-#                                              description=rp.description,
-#                                              author=rp.author,
-#                                              categoryID = rp.categoryID,
-#                                              category_name = rp.category_name,
-#                                              publication=rp.publication)
-#        return new_article
-#    except TypeError:
-#        print('Type error')
-#        return
-#    except AttributeError:
-#        print('Attribute error')
-#        return
 
 def get_articles_by_date(article_date):
     columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
@@ -183,21 +148,6 @@ def get_articles_by_date(article_date):
                                               category_name = row.category_name,
                                               publication=row.publication)
                                                 for row in rp]
-    #articles_by_date = [make_article(row) for row in rp]
-    
-    #for i in rp:
-        #print(i)
-    #a#rticles_by_date = [Article.from_sqlalchemy(i) for i in rp]
-    #return articles_by_date
-#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
-#                                              name=rp.name, date=rp.date, 
-#                                              link=rp.link,
-#                                              description=rp.description,
-#                                              author=rp.author,
-#                                              categoryID = rp.categoryID,
-#                                              category_name = rp.category_name,
-#                                              publication=rp.publication)
-#        articles_by_date.append(new_article)
     return articles_by_date
 
 def get_articles_by_date_range(start_date, end_date):
@@ -224,12 +174,12 @@ def get_articles_by_date_range(start_date, end_date):
 def get_categories():
     s = select([categories_table.c.categoryID, categories_table.c.category_name])
     rp = connection.execute(s)
-    categories_collection=[]
-    for i in rp:
-        #print(i, type(i))
-        t = Category.from_sqlalchemy(categoryID=i[0], category_name=i[1])
-        #t = make_category(i)
-        categories_collection.append(t)
+    categories_collection=[Category.from_sqlalchemy(categoryID=i[0], category_name=i[1]) for i in rp]
+#    for i in rp:
+#        #print(i, type(i))
+#        t = Category.from_sqlalchemy(categoryID=i[0], category_name=i[1])
+#        #t = make_category(i)
+#        categories_collection.append(t)
     return categories_collection
 
 def get_category(category_id):
@@ -404,24 +354,6 @@ def display_articles_by_category_id(start_date, end_date, category_id):
                                               publication=row.publication)
                                                 for row in rp]
     return articles_by_categoryID
-    
-#    articles_for_roundup = []
-#    for i in results:
-#        #print(i)
-#        #new_article = Article.from_sqlalchemy(i)
-#        articles_for_roundup.append(i)
-#
-#
-#        
-#    article_dict_list = [dict(i) for i in articles_for_roundup]
-#   # We make a dictionary so that we can make an article with it using
-#   # make_article
-#    
-#    new_articles = []
-#    for item in article_dict_list:
-#        new_articles.append(make_article(item))
-#        
-#    return new_articles
         
 def display_articles_by_category_name(start_date, end_date, category_name_snippet):
     print('category name snippet: ', category_name_snippet)
@@ -573,8 +505,3 @@ def delete_category(category_id):
 
 if __name__ == '__main__':
     connect()
-
-
-#engine = create_engine('sqlite:///db2.db')
-#metadata.create_all(engine)
-#connection = engine.connect()

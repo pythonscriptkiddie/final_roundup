@@ -490,34 +490,19 @@ def get_csv_in_directory():
         filename='{0}.csv'.format(importing_file_name)
         csv_articles = create_csv_list(filename)
         print(csv_articles)
-        #csv_articles = [csv_item_to_article(csv_article) for csv_article in csv_articles]
         print('Articles to import:')
-        #try:
         try:
             for article in csv_articles:
                 try:
                     csv_article = csv_item_to_article(article)
-                    #try:
-                #csv_article.name = Article.get_title(csv_article.link)
-                #except Exception as e:
-                #    print(e)
-                #csv_article.name = 'Not specified'
                     db.add_article_from_csv(csv_article)
                     print(csv_article.name + " was added to database.\n")
                 except IndexError:
                     print('Add article failed')
-                    #print('Import complete, return to main menu \n')
-            #except Exception as e:
-             #   print(e)
-            #    print('Article import failed.')
-                #continue
             print('Import complete, return to main menu')
         except TypeError:
             print('File not found')
             return
-    #except Exception as e:
-     #       print(e)
-
 
 def create_csv_list(filename):
     csvRows = []
@@ -567,9 +552,6 @@ def add_category():
     Planned change: move manual category creation code to the objects.py file
     '''
     Category.manual_add()
-    #new_category = Category.from_input()
-    #if new_category.category_name != '.':
-    #ds    db.add_category(new_category)
 
         
 def update_category(category_id=0):
@@ -842,13 +824,6 @@ search_id 18 will find the article with ID 18''')
         Prototype advanced category search.
         Enter 'adv_cat_search [id/name] - [start date] [end_date]'
         ''')
-        #result = parse_arg_with_date(command)
-        #print(len(result))
-        ##for i in result:
-        #    print(type(i))
-        #get_articles_by_category(category=result[0], start_date = result[1],
-                                 #end_date = result[2])
-        #print('Command is,', result)
     
     def help_search_date(self):
         print('Enter search_date [date] to search for a single date')
