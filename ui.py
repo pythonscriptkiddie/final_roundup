@@ -66,31 +66,65 @@ def display_articles(articles, title_term):
                                  article.description[:35], article.link[:35]))                          
     print()
 
-def display_articles_by_name(title_snippet=None):
-    if not title_snippet:
-        title_snippet = btc.read_text('Enter article title or "." to cancel: ')
-    if title_snippet != '.':
-        #result = db.display_article_by_name(title_snippet)
-        results = db.get_articles_by_name(title_snippet)
-        if results == None:
-            print('There is no article with that name.\n')
+class Snippet:
+    '''
+    The snippet class will communicate with the database, with snippets passed to
+    sqlalchemy and then searching for the relevant items in the databse.
+    '''
+    variables = []
+    
+    def __init__(self, text):
+        self.text=text
+        self.variable=None
+
+def from_snippet(snippet=None, snippet_type=None, start_date = None,
+                 end_date=None):
+    '''
+    This function takes a snippet, as well as the snippet type, and retrieves
+    a value from the database based on that snippet type. For example, if the
+    snippet type is 'name' then it retrieves the article by name. If it is
+    description, it retrieves it by description. This function is intended
+    to replace many of the functions that retrieve data based on text fields.
+    '''
+    results = None
+    if snippet_type == 'description':
+        if (start_date != None) or (end_date != None):
+            results = db.get_snippet(snippet, snippet_type=snippet_type)
         else:
-            display_articles(results, str('Results for {0}'.format(title_snippet)))
+            results = db.get_snippet(snippet, snippet_type=snippet_type, 
+                                     start_date = start_date,
+                                     end_date = end_date)
+    elif snippet_type == 'title':
+        print(start_date, end_date)
+        if (start_date == None) or (end_date == None):
+            results = db.get_snippet(snippet, snippet_type=snippet_type)
+        else:
+            results = db.get_snippet(snippet, snippet_type=snippet_type, 
+                                     start_date = start_date,
+                                     end_date = end_date)
+        #results = db.get_snippet(snippet, snippet_type='title') #remember it is called name
+    if results == None:
+        print('There is no article with that name.\n')
     else:
-        print('Search cancelled, returning to main menu.')
+        if snippet_type == 'title':
+            display_articles(results, str('Results for {0}'.format(snippet)))
+        elif snippet_type == 'description':
+            display_articles(results, str('Results for {0}'.format(snippet)))
+        else:
+            print('Search cancelled, returning to main menu.')
         
-def display_articles_by_description(description_snippet=None):
-    if not description_snippet:
-        description_snippet = btc.read_text('Enter article title or "." to cancel: ')
-    if description_snippet != '.':
-        #result = db.display_article_by_name(title_snippet)
-        results = db.get_articles_by_description(description_snippet)
-        if results == None:
-            print('There is no article with that name.\n')
-        else:
-            display_articles(results, str('Results for {0}'.format(description_snippet)))
-    else:
-        print('Search cancelled, returning to main menu.')
+#def display_articles_by_description(description_snippet=None):
+#    if not description_snippet:
+#        description_snippet = btc.read_text('Enter article title or "." to cancel: ')
+#    if description_snippet != '.':
+#        #result = db.display_article_by_name(title_snippet)
+#        results = db.get_articles_by_description(description_snippet)
+#        if results == None:
+#            print('There is no article with that name.\n')
+#        else:
+#            display_articles(results, str('Results for {0}'.format(description_snippet)))
+#    else:
+#        print('Search cancelled, returning to main menu.')
 
 def display_articles_by_category_id(category_id, start_date, end_date):
     category = db.get_category(category_id)
@@ -779,7 +813,22 @@ search_id 18 will find the article with ID 18''')
         print('the minimum value and less than the maximum value')
         
     def do_search_name(self, command):
-        display_articles_by_name(command)
+        #from_snippet(snippet=command, snippet_type = 'title')
+        #display_articles_by_name(command)
+        try:
+            snippet, dates = split_command(command, splitter = '-')
+            snippet = snippet.lstrip()
+            snippet = snippet.rstrip()
+            #print(snippet)
+            start_date, end_date = parse_dates(dates)
+            #print(start_date, type(start_date))
+            #print(end_date, type(end_date))
+            from_snippet(snippet=snippet, start_date=start_date,
+                                     end_date=end_date, snippet_type='title')
+        except TypeError as e:
+            print(e)
+        except ValueError as e:
+            print(e)
         
     def help_search_name(self):
         print('enter search_name [name snippet] to search by name')
@@ -812,6 +861,7 @@ search_id 18 will find the article with ID 18''')
             value = value.lstrip()
             value = value.rstrip()
             start_date, end_date = parse_dates(dates)
+
             get_articles_by_category(category=value, start_date=start_date,
                                      end_date=end_date)
         except TypeError as e:
@@ -860,7 +910,20 @@ search_id 18 will find the article with ID 18''')
         print('Partial titles are acceptable')
         
     def do_search_desc(self, command):
-        display_articles_by_description(command)
+        try:
+            snippet, dates = split_command(command, splitter = '-')
+            snippet = snippet.lstrip()
+            snippet = snippet.rstrip()
+            #print(snippet)
+            start_date, end_date = parse_dates(dates)
+            #print(start_date, type(start_date))
+            #print(end_date, type(end_date))
+            from_snippet(snippet=snippet, start_date=start_date,
+                                     end_date=end_date, snippet_type='description')
+        except TypeError as e:
+            print(e)
+        except ValueError as e:
+            print(e)
         
     def help_search_desc(self):
         print('enter search_desc [description snippet] to search by description')

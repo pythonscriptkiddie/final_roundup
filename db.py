@@ -11,9 +11,13 @@ from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         DateTime, Date, ForeignKey, Boolean, create_engine,
                         CheckConstraint, insert, select, update, and_, or_, not_)
 
-from objects import Article, Category
+try:
+    from objects import Article, Category
+except ImportError:
+    from objects import *
 from sqlalchemy.sql import delete, func
 connection=False
+#from test import testing
 
 def connect():
     global connection, articles_table, categories_table
@@ -257,50 +261,87 @@ def display_article_by_name(title_snippet):
     except Exception as e:
         print(e)
         return
-    
-def get_articles_by_name(title_snippet):
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
-    rp = connection.execute(s).fetchall()
-    articles_by_name = []
-    for i in rp:
-        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-                                                  name=i.name, date=i.date, 
-                                                  link=i.link,
-                                                  description=i.description,
-                                                  author=i.author,
-                                                  categoryID = i.categoryID,
-                                                  category_name = i.category_name,
-                                                  publication=i.publication)
-        articles_by_name.append(new_article)
-    return articles_by_name
 
-def get_articles_by_description(description_snippet):
-    '''
-    This function is intended to display articles based on partial article
-    descriptions.
-    '''
+def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
+    #if start_date:
+     #   print(start_date)
     columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
+          articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+          articles_table.c.author, articles_table.c.publication]
     s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+    if snippet_type == 'title':
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(snippet)))
+        else:
+        #    print(start_date, end_date)
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, articles_table.c.name.ilike("%{0}%".format(snippet))))
+    elif snippet_type == 'description':
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(snippet)))
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(snippet))))
+        #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(snippet)))
+    else:
+        print('Incorect snippet type, return to main menu')
+        return
     rp = connection.execute(s).fetchall()
-    articles_by_name = []
-    for i in rp:
-        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-                                                  name=i.name, date=i.date, 
-                                                  link=i.link,
-                                                  description=i.description,
-                                                  author=i.author,
-                                                  categoryID = i.categoryID,
-                                                  category_name = i.category_name,
-                                                  publication=i.publication)
-        articles_by_name.append(new_article)
-    return articles_by_name
+        #get articles by description
+    articles_by_snippet = [Article.from_sqlalchemy(articleID=row.articleID, 
+                                              name=row.name, date=row.date, 
+                                              link=row.link,
+                                              description=row.description,
+                                              author=row.author,
+                                              categoryID = row.categoryID,
+                                              category_name = row.category_name,
+                                              publication=row.publication)
+                                                for row in rp]
+    return articles_by_snippet
+    
+#def get_articles_by_name(title_snippet):
+#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
+#    rp = connection.execute(s).fetchall()
+#    articles_by_name = []
+#    for i in rp:
+#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+#                                                  name=i.name, date=i.date, 
+#                                                  link=i.link,
+#                                                  description=i.description,
+#                                                  author=i.author,
+#                                                  categoryID = i.categoryID,
+#                                                  category_name = i.category_name,
+#                                                  publication=i.publication)
+#        articles_by_name.append(new_article)
+#    return articles_by_name
+#
+#def get_articles_by_description(description_snippet):
+#    '''
+#    This function is intended to display articles based on partial article
+#    descriptions.
+#    '''
+#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+#    rp = connection.execute(s).fetchall()
+#    articles_by_name = []
+#    for i in rp:
+#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+#                                                  name=i.name, date=i.date, 
+#                                                  link=i.link,
+#                                                  description=i.description,
+#                                                  author=i.author,
+#                                                  categoryID = i.categoryID,
+#                                                  category_name = i.category_name,
+#                                                  publication=i.publication)
+#        articles_by_name.append(new_article)
+#    return articles_by_name
     #articles_by_name = [make_article(row) for row in rp]
     #return articles_by_name
     
