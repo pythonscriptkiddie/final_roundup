@@ -16,7 +16,7 @@ import cmd
 import sys
 import news_article as na
 import datetime
-#import tqdm
+import tqdm
 from matplotlib import pyplot as plt
 from dateutil.parser import parse
 
@@ -39,6 +39,92 @@ def display_menu(title, menu_items, end='   '):
 #    for category in categories:
 #        print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
 #    print()
+
+def from_newspaper(link):
+    '''
+    Adds an article from the newspaper module after downloading it
+    '''
+    for i in tqdm.tqdm(range(1)):
+        try:
+            newNewsItem = na.get_article_from_url(link)
+        except:
+            print('Article download failed, invalid URL')
+            print('Returning to main menu')
+            return
+    print(newNewsItem)
+    try:
+        name = newNewsItem.title #get the title for the article
+    except Exception as e:
+        print(e)
+        name = btc.read_text('Please enter title: ')
+        #get article author
+    try:
+        author = ' '.join(newNewsItem.authors)
+        #get article publication
+    except Exception as e:
+        print(e)
+        author = btc.read_text('Please enter author: ')
+    try:
+        #works for most websites, but not Sudan Tribune
+        publication = newNewsItem.meta_data['og']['site_name']
+    except Exception as e:
+        print(e)
+        publication = btc.read_text('Please enter publication: ')
+    try:
+        year = newNewsItem.publish_date.year
+        month = newNewsItem.publish_date.month
+        day = newNewsItem.publish_date.day
+        new_date = datetime.date(day=day, month=month, year=year)
+    except Exception as e:
+        print(e)
+        has_date = False
+        while has_date == False:
+            try:
+                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+                new_date = parse(new_date)
+                new_date = new_date.date()
+                has_date = True
+            except Exception as e:
+                print(e)
+        
+    except Exception as e:
+        print('invalid date', e)
+    try:
+        summary = newNewsItem.summary
+    except Exception as e:
+        print(e)
+        print('Summary download failed')
+        summary = 'Summary not found'
+    try:
+        keywords = ', '.join(newNewsItem.keywords)
+    except Exception as e:
+        print(e)
+        print('Keyword download failed')
+        keywords= 'keywords not found'
+    print('TITLE - {0} - AUTHOR {1}'.format(name, author))
+    print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
+    print('KEYWORDS: ', keywords)
+    display_categories()
+    category_id = btc.read_text("Category ID: ")
+    category = db.get_category(category_id)
+    if category == None:
+        print('There is no category with that ID. article NOT added.\n')
+        return
+    description_choice = btc.read_text('View article description? y/n: ')
+    if description_choice == 'y':
+        print('Title: {0}'.format(name))
+        print('Summary: {0}'.format(summary))
+        print('Keywords: {0}'.format(keywords))
+    description = btc.read_text("Description or '.' to cancel: ")
+    
+    if description == ".":
+        return
+    else:
+        new_article = Article(name=name, date=new_date,
+                  category=category, link=link, description=description,
+                  author=author, publication=publication)
+        db.add_article(new_article)    
+        print(new_article.name + " was added to database.\n")
 
 def display_single_article(article, title_term):
     template ='''
@@ -231,8 +317,14 @@ def display_articles_by_publication(publication_snippet=None):
             display_articles(publications, "PUBLICATION: " + str('Error: {0}'.format(e)))
 
 def manual_add(link=None):
-    Article.manual_add(link)
-    
+    category = btc.read_int('Enter category for article: ')
+    category = db.get_category(category)
+    new_article = Article.manual_add(link=link, category=category)
+    db.add_article(new_article)
+    print(new_article.title + " was added to database.\n")
+    #Article.manual_add(link)
+
+
 
 def update_article_name(article_id):
     article = db.get_article(article_id)
@@ -601,7 +693,12 @@ def add_category():
     '''
     Planned change: move manual category creation code to the objects.py file
     '''
-    Category.manual_add()
+    new_category = Category.from_input()
+    if new_category.category_name != '.':
+        db.add_category(new_category)        
+        print('New category created: {0}'.format(new_category.name))
+    else:
+        print('Invalid name, new category not created.')
 
         
 def update_category(category_id=0):
@@ -668,8 +765,8 @@ def export_roundup_by_date():
         #display_title()
         
 def export_roundup_by_category():
-    #display_categories()
-    Category.display_categories()
+    display_categories()
+    #Category.display_categories()
     roundup_categories = db.get_categories()
     categories_remaining = len(roundup_categories)
     categories_for_roundup = []
@@ -728,7 +825,7 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
 def category_interface(command):
     category_commands = {'add': add_category,
                        'update': update_category,
-                       'display': Category.display_categories,
+                       'display': display_categories,
                        'delete' : delete_category,
                        'stats': get_articles_by_category,
                        }
@@ -768,6 +865,14 @@ def get_stats(start_date=None, end_date=None):
     except Exception as e:
         print(e)
         return
+    
+def display_categories(command=''):
+        del command
+        print("CATEGORIES")
+        categories = db.get_categories()  
+        for category in categories:
+            print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
+        print()
     
 def split_command(command, splitter = ' '):
     #if type(command) != int:
@@ -958,7 +1063,8 @@ search_id 18 will find the article with ID 18''')
 without any suffix''')
     
     def do_add(self, command):
-        Article.add_from_newspaper(link=command)
+        from_newspaper(link=command)
+        #Article.add_from_newspaper(link=command)
         #add_article_from_newspaper(link=command)
         
     def help_add(self):

@@ -11,14 +11,11 @@ Created on Thu Aug 15 20:39:38 2019
 from datetime import datetime, date
 from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         DateTime, Date, ForeignKey, Boolean, create_engine,
-                        CheckConstraint, insert, select, update, and_, or_, not_)
+                        CheckConstraint, insert, select,
+                        update, and_, or_, not_)
 
-try:
-    from objects import Article, Category
 
-except ImportError as e:
-    print(e)
-    #from objects import *
+from objects import Article, Category
 from sqlalchemy.sql import delete, func
 connection=False
 #from test import testing

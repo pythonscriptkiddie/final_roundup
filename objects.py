@@ -1,16 +1,15 @@
 #from bs4 import BeautifulSoup
-import re
+#import re
 #import requests
 import datetime
 from typing import Any
 from dataclasses import dataclass
 from dateutil.parser import parse
 import news_article as na
-import db
-import tqdm
+#import db
+#import tqdm
 #from test_dal2 import dal
-#from .._db import db as db
-import BTCInput as btc
+#import BTCInput as btc
 #import ui
 
 #pd.options.display.max_colwidth = 200
@@ -216,103 +215,103 @@ class Article:
         except KeyboardInterrupt:
             print('Ctrl+C pressed, add article cancelled')
     
-    @classmethod
-    def from_newspaper(cls, link):
-        '''
-        Adds an article from the newspaper module after downloading it
-        '''
-        for i in tqdm.tqdm(range(1)):
-            try:
-                newNewsItem = na.get_article_from_url(link)
-            except:
-                print('Article download failed, invalid URL')
-                print('Returning to main menu')
-                return
-        print(newNewsItem)
-        try:
-            name = newNewsItem.title #get the title for the article
-        except Exception as e:
-            print(e)
-            name = btc.read_text('Please enter title: ')
-            #get article author
-        try:
-            author = ' '.join(newNewsItem.authors)
-            #get article publication
-        except Exception as e:
-            print(e)
-            author = btc.read_text('Please enter author: ')
-        try:
-            #works for most websites, but not Sudan Tribune
-            publication = newNewsItem.meta_data['og']['site_name']
-        except Exception as e:
-            print(e)
-            publication = btc.read_text('Please enter publication: ')
-        try:
-            year = newNewsItem.publish_date.year
-            month = newNewsItem.publish_date.month
-            day = newNewsItem.publish_date.day
-            new_date = datetime.date(day=day, month=month, year=year)
-        except Exception as e:
-            print(e)
-            has_date = False
-            while has_date == False:
-                try:
-                    new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
-                    new_date = parse(new_date)
-                    new_date = new_date.date()
-                    has_date = True
-                except Exception as e:
-                    print(e)
-            
-        except Exception as e:
-            print('invalid date', e)
-        try:
-            summary = newNewsItem.summary
-        except Exception as e:
-            print(e)
-            print('Summary download failed')
-            summary = 'Summary not found'
-        try:
-            keywords = ', '.join(newNewsItem.keywords)
-        except Exception as e:
-            print(e)
-            print('Keyword download failed')
-            keywords= 'keywords not found'
-        print('TITLE - {0} - AUTHOR {1}'.format(name, author))
-        print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
-        print('KEYWORDS: ', keywords)
-        Category.display_categories()
-        category_id = btc.read_text("Category ID: ")
-        category = db.get_category(category_id)
-        if category == None:
-            print('There is no category with that ID. article NOT added.\n')
-            return
-        description_choice = btc.read_text('View article description? y/n: ')
-        if description_choice == 'y':
-            print('Title: {0}'.format(name))
-            print('Summary: {0}'.format(summary))
-            print('Keywords: {0}'.format(keywords))
-        description = btc.read_text("Description or '.' to cancel: ")
+#    @classmethod
+#    def from_newspaper(cls, link):
+#        '''
+#        Adds an article from the newspaper module after downloading it
+#        '''
+#        for i in tqdm.tqdm(range(1)):
+#            try:
+#                newNewsItem = na.get_article_from_url(link)
+#            except:
+#                print('Article download failed, invalid URL')
+#                print('Returning to main menu')
+#                return
+#        print(newNewsItem)
+#        try:
+#            name = newNewsItem.title #get the title for the article
+#        except Exception as e:
+#            print(e)
+#            name = btc.read_text('Please enter title: ')
+#            #get article author
+#        try:
+#            author = ' '.join(newNewsItem.authors)
+#            #get article publication
+#        except Exception as e:
+#            print(e)
+#            author = btc.read_text('Please enter author: ')
+#        try:
+#            #works for most websites, but not Sudan Tribune
+#            publication = newNewsItem.meta_data['og']['site_name']
+#        except Exception as e:
+#            print(e)
+#            publication = btc.read_text('Please enter publication: ')
+#        try:
+#            year = newNewsItem.publish_date.year
+#            month = newNewsItem.publish_date.month
+#            day = newNewsItem.publish_date.day
+#            new_date = datetime.date(day=day, month=month, year=year)
+#        except Exception as e:
+#            print(e)
+#            has_date = False
+#            while has_date == False:
+#                try:
+#                    new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+#                    new_date = parse(new_date)
+#                    new_date = new_date.date()
+#                    has_date = True
+#                except Exception as e:
+#                    print(e)
+#            
+#        except Exception as e:
+#            print('invalid date', e)
+#        try:
+#            summary = newNewsItem.summary
+#        except Exception as e:
+#            print(e)
+#            print('Summary download failed')
+#            summary = 'Summary not found'
+#        try:
+#            keywords = ', '.join(newNewsItem.keywords)
+#        except Exception as e:
+#            print(e)
+#            print('Keyword download failed')
+#            keywords= 'keywords not found'
+#        print('TITLE - {0} - AUTHOR {1}'.format(name, author))
+#        print('DATE - {0} - PUBLICATION {1}'.format(new_date.strftime("%m/%d/%Y"), publication))
+#        print('KEYWORDS: ', keywords)
+#        Category.display_categories()
+#        category_id = btc.read_text("Category ID: ")
+#        category = db.get_category(category_id)
+#        if category == None:
+#            print('There is no category with that ID. article NOT added.\n')
+#            return
+#        description_choice = btc.read_text('View article description? y/n: ')
+#        if description_choice == 'y':
+#            print('Title: {0}'.format(name))
+#            print('Summary: {0}'.format(summary))
+#            print('Keywords: {0}'.format(keywords))
+#        description = btc.read_text("Description or '.' to cancel: ")
+#        
+#        if description == ".":
+#            return
+#        else:
+#            return cls(name=name, date=new_date,
+#                      category=category, link=link, description=description,
+#                      author=author, publication=publication)
         
-        if description == ".":
-            return
-        else:
-            return cls(name=name, date=new_date,
-                      category=category, link=link, description=description,
-                      author=author, publication=publication)
-        
-    @staticmethod
-    def add_from_newspaper(link):
-        new_article = Article.from_newspaper(link)
-        db.add_article(new_article)    
-        print(new_article.name + " was added to database.\n")
+#    @staticmethod
+#    def add_from_newspaper(link):
+#        new_article = Article.from_newspaper(link)
+#        db.add_article(new_article)    
+#        print(new_article.name + " was added to database.\n")
 #            article = Article(name=name, date=new_date,
 #                      category=category, link=link, description=description,
 #                      author=author, publication=publication)
 #        db.add_article(article)    
 #        print(name + " was added to database.\n")
 
-    def manual_add(link=None):
+    def manual_add(category, link=None):
         if (link == None) or (not link):
             print('Link', link)
             print('No link supplied, manual_add must be followed by link.')
@@ -321,15 +320,16 @@ class Article:
             print('Manual article creation/n')
             print('Link: {0}'.format(link))
             Category.display_categories()
-            new_article_category = btc.read_int('Enter category for article: ')
-            category = db.get_category(new_article_category)
+            #new_article_category = btc.read_int('Enter category for article: ')
+            #category = db.get_category(new_article_category)
             assert category != None
             new_article = Article.from_input(link=link, category=category)
             if new_article == None:
                 print('Article creation cancelled. Returning to main menu.')
                 return
-            db.add_article(new_article)
-            print(new_article.title + " was added to database.\n")
+            return new_article
+#            db.add_article(new_article)
+#            print(new_article.title + " was added to database.\n")
     
         
     #def __repr__(self):
@@ -402,22 +402,22 @@ class Category:
     def name(self):
         return self.category_name
     
-    @staticmethod
-    def display_categories(command=''):
-        del command
-        print("CATEGORIES")
-        categories = db.get_categories()  
-        for category in categories:
-            print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
-        print()
+#    @staticmethod
+#    def display_categories(command=''):
+#        del command
+#        print("CATEGORIES")
+#        categories = db.get_categories()  
+#        for category in categories:
+#            print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
+#        print()
 
-    @staticmethod
-    def manual_add():
-        '''
-        Obtains a new Category object from the Category.from_input() method and
-        adds it to the database.
-        '''
-        new_category = Category.from_input()
-        if new_category.category_name != '.':
-            db.add_category(new_category)        
-            print('New category created: {0}'.format(new_category.name))
+#    @staticmethod
+#    def manual_add():
+#        '''
+#        Obtains a new Category object from the Category.from_input() method and
+#        adds it to the database.
+#        '''
+#        new_category = Category.from_input()
+#        if new_category.category_name != '.':
+#            db.add_category(new_category)        
+#            print('New category created: {0}'.format(new_category.name))
