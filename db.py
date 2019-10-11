@@ -288,7 +288,12 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
               articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(snippet))))
         #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(snippet)))
     elif snippet_type == 'category':
-        pass
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(categories_table.c.category_name.ilike("%{0}%".format(snippet)))
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(snippet))))
+        #pass
     else:
         print('Incorect snippet type, return to main menu')
         return
@@ -402,29 +407,29 @@ def display_articles_by_category_id(start_date, end_date, category_id):
                                                 for row in rp]
     return articles_by_categoryID
         
-def display_articles_by_category_name(start_date, end_date, category_name_snippet):
-    print('category name snippet: ', category_name_snippet)
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
-                articles_table.c.categoryID, articles_table.c.link,
-                articles_table.c.description, articles_table.c.publication,
-                articles_table.c.author, categories_table.c.category_name]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-              articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(category_name_snippet))))
-              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
-    rp = connection.execute(s)
-    #results = rp.fetchall()
-    
-    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
-                                              name=row.name, date=row.date, 
-                                              link=row.link,
-                                              description=row.description,
-                                              author=row.author,
-                                              categoryID = row.categoryID,
-                                              category_name = row.category_name,
-                                              publication=row.publication)
-                                                for row in rp]
-    return articles_by_categoryID
+#def display_articles_by_category_name(start_date, end_date, category_name_snippet):
+#    print('category name snippet: ', category_name_snippet)
+#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
+#                articles_table.c.categoryID, articles_table.c.link,
+#                articles_table.c.description, articles_table.c.publication,
+#                articles_table.c.author, categories_table.c.category_name]
+#    s = select(columns)
+#    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+#              articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(category_name_snippet))))
+#              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
+#    rp = connection.execute(s)
+#    #results = rp.fetchall()
+#    
+#    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
+#                                              name=row.name, date=row.date, 
+#                                              link=row.link,
+#                                              description=row.description,
+#                                              author=row.author,
+#                                              categoryID = row.categoryID,
+#                                              category_name = row.category_name,
+#                                              publication=row.publication)
+#                                                for row in rp]
+#    return articles_by_categoryID
     
 def display_articles_by_publication(publication_snippet):
     '''

@@ -147,15 +147,15 @@ def display_articles_by_category_id(category_id, start_date, end_date):
         print('Total articles: {0}'.format(db.get_article_count(category_id=category_id,
               start_date=start_date, end_date=end_date)))
 
-def display_articles_by_category_name(category_snippet, start_date, end_date):
-    search_category = db.get_category_by_name(category_snippet)
-    if search_category == None:
-        print('There is no category with that ID.\n')
-    else:
-        print()
-        #search_category_id = search_category.CategoryID
-        articles = db.display_articles_by_category_name(start_date, end_date, category_snippet)
-        display_articles(articles, search_category.category_name.upper())
+#def display_articles_by_category_name(category_snippet, start_date, end_date):
+#    search_category = db.get_category_by_name(category_snippet)
+#    if search_category == None:
+#        print('There is no category with that ID.\n')
+#    else:
+#        print()
+#        #search_category_id = search_category.CategoryID
+#        articles = db.display_articles_by_category_name(start_date, end_date, category_snippet)
+#        display_articles(articles, search_category.category_name.upper())
  
 def search_single_date(article_date):
     assert type(article_date) == datetime.date
