@@ -6,6 +6,8 @@ Created on Thu Aug 15 20:39:38 2019
 @author: thomassullivan
 """
 
+#from objects import Article, Category
+
 from datetime import datetime, date
 from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         DateTime, Date, ForeignKey, Boolean, create_engine,
@@ -13,8 +15,10 @@ from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
 
 try:
     from objects import Article, Category
-except ImportError:
-    from objects import *
+
+except ImportError as e:
+    print(e)
+    #from objects import *
 from sqlalchemy.sql import delete, func
 connection=False
 #from test import testing
@@ -273,7 +277,7 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
         if (start_date == None) or (end_date == None):
             s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(snippet)))
         else:
-        #    print(start_date, end_date)
+            print(start_date, end_date)
             s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
               articles_table.c.date <= end_date, articles_table.c.name.ilike("%{0}%".format(snippet))))
     elif snippet_type == 'description':
@@ -283,6 +287,8 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
             s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
               articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(snippet))))
         #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(snippet)))
+    elif snippet_type == 'category':
+        pass
     else:
         print('Incorect snippet type, return to main menu')
         return

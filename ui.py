@@ -95,13 +95,20 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
                                      start_date = start_date,
                                      end_date = end_date)
     elif snippet_type == 'title':
-        print(start_date, end_date)
+        #print(start_date, end_date)
         if (start_date == None) or (end_date == None):
             results = db.get_snippet(snippet, snippet_type=snippet_type)
         else:
             results = db.get_snippet(snippet, snippet_type=snippet_type, 
                                      start_date = start_date,
                                      end_date = end_date)
+    elif snippet_type == 'category':
+        if (start_date == None) or (end_date == None):
+            results = db.get_snippet(snippet, snippet_type=snippet_type)
+        else:
+            results = db.get_snippet(snippet, snippet_type=snippet_type, 
+                                     start_date = start_date,
+                                     end_date = end_date)        
         #results = db.get_snippet(snippet, snippet_type='title') #remember it is called name
     if results == None:
         print('There is no article with that name.\n')
@@ -109,6 +116,8 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
         if snippet_type == 'title':
             display_articles(results, str('Results for {0}'.format(snippet)))
         elif snippet_type == 'description':
+            display_articles(results, str('Results for {0}'.format(snippet)))
+        elif snippet_type == 'category':
             display_articles(results, str('Results for {0}'.format(snippet)))
         else:
             print('Search cancelled, returning to main menu.')
@@ -695,9 +704,11 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
     #end_date = parse(end_date)
     if category.isalpha() == True:
         print('category name detected')
-        display_articles_by_category_name(category_snippet=category,
-                                          start_date=start_date,
-                                          end_date=end_date)
+        from_snippet(snippet=category, start_date=start_date,
+                    end_date=end_date, snippet_type='category')
+        #display_articles_by_category_name(category_snippet=category,
+        #                                  start_date=start_date,
+         #                                 end_date=end_date)
     elif category.isnumeric() == True:
         print('numeric category ID detected')
         #try:
@@ -706,16 +717,11 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
             
         #except:
             #print('Article search cancelled. Return to main menu.\n')
-         
-
-
-category_menu = ['add_cat - Add a category', 'update_cat - Update category name',
-                 'del_cat - delete category', 'cat_help - display categories']
 
 def category_interface(command):
     category_commands = {'add': add_category,
                        'update': update_category,
-                       #'display': display_categories,
+                       'display': Category.display_categories,
                        'delete' : delete_category,
                        'stats': get_articles_by_category,
                        }
@@ -848,12 +854,22 @@ search_id 18 will find the article with ID 18''')
                 search_single_date(dates[0])
             elif len(dates) == 2:
                 start_date, end_date = dates[0], dates[1]
+                print(start_date, end_date)
                 if start_date > end_date:
                     print('start date must come before end date') #starting date must come first
                     return
                 search_date_range(start_date, end_date)
         except ValueError as v:
             print(v)
+        except TypeError as t:
+            print(t, 'Invalid date entered')
+            
+    def help_search_date(self):
+        print('Enter search_date [date] to search for a single date')
+        print('e.g.:')
+        print('search_date 05/02/2019')
+        print('search_date 06/14/2019')
+        print('Enter search_date [date_1] [date_2] to search a range of dates')
     
     def do_search_category(self, command):
         try:
@@ -875,12 +891,7 @@ search_id 18 will find the article with ID 18''')
         Enter 'adv_cat_search [id/name] - [start date] [end_date]'
         ''')
     
-    def help_search_date(self):
-        print('Enter search_date [date] to search for a single date')
-        print('e.g.:')
-        print('search_date 05/02/2019')
-        print('search_date 06/14/2019')
-        print('Enter search_date [date_1] [date_2] to search a range of dates')
+
         
 #    def do_search_date_range(self, command):
 #        try:
@@ -1066,11 +1077,11 @@ export month - export roundup by month
 export finalize - finalize title stripping
 export finish_desc - finish article descriptions''')
         
-    def do_display_categories(self, command):
-        Category.display_categories(command)
-        
-    def help_display_categories(self):
-        print('Displays a list of the currently available categories.')
+#    def do_display_categories(self, command):
+#        Category.display_categories(command)
+#        
+#    def help_display_categories(self):
+#        print('Displays a list of the currently available categories.')
         
     def do_exit(self, arg):
         db.close()
