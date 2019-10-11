@@ -356,33 +356,34 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
     #articles_by_name = [make_article(row) for row in rp]
     #return articles_by_name
     
-def get_date_range_undescribed_articles(start_date, end_date,
-                                        description_snippet='Not specified'):
-    '''
-    This function is intended to display articles based on partial article
-    descriptions.
-    '''
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
-    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-              articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(description_snippet))))
-    
-    rp = connection.execute(s).fetchall()
-    articles_by_name = []
-    for i in rp:
-        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-                                                  name=i.name, date=i.date, 
-                                                  link=i.link,
-                                                  description=i.description,
-                                                  author=i.author,
-                                                  categoryID = i.categoryID,
-                                                  category_name = i.category_name,
-                                                  publication=i.publication)
-        articles_by_name.append(new_article)
-    return articles_by_name
+#def get_date_range_undescribed_articles(start_date, end_date,
+#                                        description_snippet='Not specified'):
+#    '''
+#    This function is intended to display articles based on partial article
+#    descriptions.
+#    '''
+#    
+#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
+#    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+#              articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(description_snippet))))
+#    
+#    rp = connection.execute(s).fetchall()
+#    articles_by_name = []
+#    for i in rp:
+#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
+#                                                  name=i.name, date=i.date, 
+#                                                  link=i.link,
+#                                                  description=i.description,
+#                                                  author=i.author,
+#                                                  categoryID = i.categoryID,
+#                                                  category_name = i.category_name,
+#                                                  publication=i.publication)
+#        articles_by_name.append(new_article)
+#    return articles_by_name
     
 def display_articles_by_category_id(start_date, end_date, category_id):
     columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,

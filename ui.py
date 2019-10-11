@@ -399,9 +399,16 @@ Old title: {1}'''.format(new_title, article.name))
             print('article update cancelled')
     
 def finalize_article_descriptions(start_date, end_date):
-    undescribed = db.get_date_range_undescribed_articles(description_snippet='Not specified',
-                                                         start_date=start_date,
-                                                         end_date=end_date)
+    #undescribed = db.get_date_range_undescribed_articles(description_snippet='Not specified',
+    #                                                     start_date=start_date,
+    #                                                     end_date=end_date)
+    undescribed = db.get_snippet(snippet='Not specified',
+                                 start_date=start_date,
+                                 end_date=end_date,
+                                 snippet_type='description')
+    #We call the get_snippet function with "Not specified" as the description
+    #because that's the description for all undescribed articles imported
+    #from csv files
     undescribed_articles = len(undescribed)
     print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
@@ -837,8 +844,9 @@ search_id 18 will find the article with ID 18''')
             print(e)
         
     def help_search_name(self):
-        print('enter search_name [name snippet] to search by name')
-        print('search_name will find all the articles in ')
+        print('enter search_name [name snippet] - [start_date] [end_date] to search by name')
+        print('For example:')
+        print('search_name somalia - 08/01/2019 08/31/2019')
         
 #    def do_search_category(self, command):
 #        get_articles_by_category(command)
@@ -1052,14 +1060,14 @@ will return to the main menu.
     
     def do_complete_desc(self, command):
         #command = split_command(command)
-        try:
-            start_date, end_date = parse_dates(command)
-        
-            finalize_article_descriptions(start_date=start_date, end_date=end_date)
-        except TypeError:
-            print('complete_desc command entered incorrectly')
-        except ValueError:
-            print('complete_desc command entered incorrectly')
+        #try:
+        start_date, end_date = parse_dates(command)
+    
+        finalize_article_descriptions(start_date=start_date, end_date=end_date)
+        #except TypeError:
+        #    print('complete_desc command entered incorrectly')
+        #except ValueError:
+        #    print('complete_desc command entered incorrectly')
             
     
     def help_complete_desc(self):
