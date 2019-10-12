@@ -682,7 +682,7 @@ def delete_article(article_id):
         choice = input("Are you sure you want to delete '" + 
                        article.name + "'? (y/n): ")
         if choice == "y":
-            db.delete_article(article_id)
+            db.delete_item(article_id, item_type='article')
             print("'" + article.name + "' was deleted from database.\n")
         else:
             print("'" + article.name + "' was NOT deleted from database.\n")
@@ -727,7 +727,7 @@ def delete_category():
     elif articles_in_category == 0:
         delete_choice = btc.read_float_ranged('Press 1 to delete, 2 to cancel: ', 1, 2)
         if delete_choice == 1:
-            db.delete_category(category_id)
+            db.delete_item(item_id=category_id, item_type='category')
             print('Category deleted.\n')
         elif delete_choice == 2:
             print('Delete cancelled, returning to category menu')
@@ -837,6 +837,31 @@ def category_interface(command):
             command=category_commands[command]()
         except KeyError:
             print('Invalid suffix for category menu')
+
+#def category_interface2(command):
+#    invalid = lambda error_msg: print(error_msg)
+#    category_commands = {'add': add_category,
+#                       'update': update_category,
+#                       'display': display_categories,
+#                       'delete' : delete_category,
+#                       'stats': get_articles_by_category,
+#                       }
+#    
+#    if not command:
+#        print('Enter command kangaroo attack imminent')
+#    else:
+#        #try:
+#        #command=category_commands.get(command, print('Invalid parameter'))
+#        command=category_commands.get(command, 'invalid parameter')
+#        command #call the command as a function
+        
+            #
+            #command=category_commands[command]()
+        #except KeyError:
+         #   print('Invalid suffix for category menu')
+        #except TypeError as e:
+        #    print('Invalid suffix for category menu')
+        #   print(e)
 
 
 def export_interface(command):

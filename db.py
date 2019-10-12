@@ -543,15 +543,26 @@ def update_article_date(article_id, new_date):
 
 #DELETE SECTION - Delete articles and categories
     
-def delete_article(article_id):
-    u = delete(articles_table).where(articles_table.c.articleID == article_id)
-    result = connection.execute(u)
-    print(result.rowcount)
+#def delete_article(article_id):
+#    u = delete(articles_table).where(articles_table.c.articleID == article_id)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#    
+#def delete_category(category_id):
+#    u = delete(categories_table).where(categories_table.c.categoryID == category_id)
+#    result = connection.execute(u)
+#    print(result.rowcount)
     
-def delete_category(category_id):
-    u = delete(categories_table).where(categories_table.c.categoryID == category_id)
+def delete_item(item_id, item_type):
+    if item_type == 'article':
+        u = delete(articles_table).where(articles_table.c.articleID == item_id)
+    elif item_type == 'category':
+        u = delete(categories_table).where(categories_table.c.categoryID == item_id)
+    else:
+        print('Invalid delete command. Return to main menu.')
     result = connection.execute(u)
     print(result.rowcount)
+        
 
 if __name__ == '__main__':
     connect()
