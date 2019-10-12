@@ -839,7 +839,7 @@ def category_interface(command):
             print('Invalid suffix for category menu')
 
 #def category_interface2(command):
-#    invalid = lambda error_msg: print(error_msg)
+#    invalid = lambda error_msg: print(error_msg) 
 #    category_commands = {'add': add_category,
 #                       'update': update_category,
 #                       'display': display_categories,
@@ -852,8 +852,14 @@ def category_interface(command):
 #    else:
 #        #try:
 #        #command=category_commands.get(command, print('Invalid parameter'))
-#        command=category_commands.get(command, 'invalid parameter')
-#        command #call the command as a function
+#        command=category_commands.get(command, invalid(error_msg = 'Invalid parameter'))
+#        #print(command, len(command))
+#        if type(command) != None:
+#            command()
+#        else:
+#            return 
+        #print(command)
+        #command() #call the command as a function
         
             #
             #command=category_commands[command]()
