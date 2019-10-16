@@ -8,7 +8,7 @@
 import db
 from objects import Article, Category
 import roundup_docx2 as roundup_docx
-import BTCInput as btc
+import BTCInput2 as btc
 import operator
 import csv
 import glob
@@ -77,15 +77,18 @@ def from_newspaper(link):
         new_date = datetime.date(day=day, month=month, year=year)
     except Exception as e:
         print(e)
-        has_date = False
-        while has_date == False:
-            try:
-                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
-                new_date = parse(new_date)
-                new_date = new_date.date()
-                has_date = True
-            except Exception as e:
-                print(e)
+    #use the new btc.read_date() function to simplify this
+    try: 
+        new_date = btc.read_date('Enter article date MM/DD/YYYY: ')
+#        has_date = False
+#        while has_date == False:
+#            try:
+#                new_date = btc.read_text('Enter article date MM/DD/YYYY: ')
+#                new_date = parse(new_date)
+#                new_date = new_date.date()
+#                has_date = True
+#            except Exception as e:
+#                print(e)
         
     except Exception as e:
         print('invalid date', e)
@@ -448,11 +451,11 @@ def update_article_date(article_id):
         article_choice = btc.read_int_ranged('1 to edit article date, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
-            new_date = btc.read_text('Enter new date:' )
-            new_date = parse(new_date)
-            new_date_format = new_date.date()
-            print(type(new_date))
-            date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date_format),
+            new_date = btc.read_date('Enter new date: ')
+            #new_date = parse(new_date)
+            #new_date_format = new_date.date()
+            #print(type(new_date))
+            date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date),
                                               min_value=1, max_value=2)
             if date_choice == 1:
                 db.update_article_date(article_id, new_date)
@@ -743,11 +746,13 @@ def export_roundup():
         
 def export_roundup_by_date():
     roundup_title = btc.read_text('Enter the roundup title: ')
-    start_date = parse(btc.read_text('Enter the starting date: '))
-    start_date = start_date.date()
+    start_date = btc.read_date('Enter the starting date: ')
+    end_date = btc.read_date('Enter the ending date: ')
+    #start_date = parse(btc.read_text('Enter the starting date: '))
+    #start_date = start_date.date()
     #start_date = parse(start_date)
-    end_date = parse(btc.read_text('Enter the ending date: '))
-    end_date = end_date.date()
+    #end_date = parse(btc.read_text('Enter the ending date: '))
+    #end_date = end_date.date()
     print('start date: ', start_date, 'end date: ', end_date)
     print('start date type:', type(start_date), 'end date type:', type(end_date))
     filename = btc.read_text('Enter roundup filename: ')

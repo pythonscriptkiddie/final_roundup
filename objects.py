@@ -9,7 +9,7 @@ import news_article as na
 #import db
 #import tqdm
 #from test_dal2 import dal
-#import BTCInput as btc
+import BTCInput2 as btc
 #import ui
 
 #pd.options.display.max_colwidth = 200
@@ -192,8 +192,9 @@ class Article:
                 return
                 #link=read_text('Article url:' )
             name = read_text('Article title: ')
-            new_date = read_text('Article date: ')
-            new_date = parse(new_date)
+            new_date = btc.read_date('Article date: ')
+            #new_date = read_text('Article date: ')
+            #new_date = parse(new_date)
             #assert Article.validate_date(day=day,month=month,year=year) == True
             author = read_text('Author: ')
             publication = read_text('Publication: ')
@@ -319,7 +320,7 @@ class Article:
         else:
             print('Manual article creation/n')
             print('Link: {0}'.format(link))
-            Category.display_categories()
+            #Category.display_categories()
             #new_article_category = btc.read_int('Enter category for article: ')
             #category = db.get_category(new_article_category)
             assert category != None
