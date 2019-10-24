@@ -23,7 +23,7 @@ connection=False
 def connect():
     global connection, articles_table, categories_table
     if not connection:
-        engine = create_engine("sqlite:///db5.db")
+        engine = create_engine("sqlite:///sub_saharan_roundup.db")
         metadata = MetaData()
         articles_table = Table('Articles', metadata,
                 Column('articleID', Integer(), primary_key=True, index=True),
@@ -485,6 +485,9 @@ def get_undescribed_article_count(start_date, end_date, description_snippet):
     record = rp.first()
     #print(record.count_1)
     return record.count_1
+
+def get_count(snippet):
+    pass
     
 
 def get_article_count(category_id=None, start_date=None, end_date=None):
