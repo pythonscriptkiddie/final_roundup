@@ -180,11 +180,6 @@ def get_categories():
     s = select([categories_table.c.categoryID, categories_table.c.category_name])
     rp = connection.execute(s)
     categories_collection=[Category.from_sqlalchemy(categoryID=i[0], category_name=i[1]) for i in rp]
-#    for i in rp:
-#        #print(i, type(i))
-#        t = Category.from_sqlalchemy(categoryID=i[0], category_name=i[1])
-#        #t = make_category(i)
-#        categories_collection.append(t)
     return categories_collection
 
 def get_category(category_id):
@@ -271,6 +266,7 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
           articles_table.c.author, articles_table.c.publication]
     s = select(columns)
     if snippet_type == 'title':
+        #the snippet type is named title, but the field in the articles table is called name
         if (start_date == None) or (end_date == None):
             s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(snippet)))
         else:
@@ -290,12 +286,17 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
         else:
             s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
               articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(snippet))))
-        #pass
+    elif snippet_type == 'category_id':
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(categories_table.c.categoryID == snippet)
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, categories_table.c.categoryID==snippet))
+        pass
     else:
-        print('Incorect snippet type, return to main menu')
+        print('Incorrect snippet type, return to main menu')
         return
     rp = connection.execute(s).fetchall()
-        #get articles by description
     articles_by_snippet = [Article.from_sqlalchemy(articleID=row.articleID, 
                                               name=row.name, date=row.date, 
                                               link=row.link,
@@ -306,81 +307,6 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
                                               publication=row.publication)
                                                 for row in rp]
     return articles_by_snippet
-    
-#def get_articles_by_name(title_snippet):
-#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-#              articles_table.c.author, articles_table.c.publication]
-#    s = select(columns)
-#    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
-#    rp = connection.execute(s).fetchall()
-#    articles_by_name = []
-#    for i in rp:
-#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-#                                                  name=i.name, date=i.date, 
-#                                                  link=i.link,
-#                                                  description=i.description,
-#                                                  author=i.author,
-#                                                  categoryID = i.categoryID,
-#                                                  category_name = i.category_name,
-#                                                  publication=i.publication)
-#        articles_by_name.append(new_article)
-#    return articles_by_name
-#
-#def get_articles_by_description(description_snippet):
-#    '''
-#    This function is intended to display articles based on partial article
-#    descriptions.
-#    '''
-#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-#              articles_table.c.author, articles_table.c.publication]
-#    s = select(columns)
-#    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
-#    rp = connection.execute(s).fetchall()
-#    articles_by_name = []
-#    for i in rp:
-#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-#                                                  name=i.name, date=i.date, 
-#                                                  link=i.link,
-#                                                  description=i.description,
-#                                                  author=i.author,
-#                                                  categoryID = i.categoryID,
-#                                                  category_name = i.category_name,
-#                                                  publication=i.publication)
-#        articles_by_name.append(new_article)
-#    return articles_by_name
-    #articles_by_name = [make_article(row) for row in rp]
-    #return articles_by_name
-    
-#def get_date_range_undescribed_articles(start_date, end_date,
-#                                        description_snippet='Not specified'):
-#    '''
-#    This function is intended to display articles based on partial article
-#    descriptions.
-#    '''
-#    
-#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-#              articles_table.c.author, articles_table.c.publication]
-#    s = select(columns)
-#    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.description.ilike("%{0}%".format(description_snippet)))
-#    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-#              articles_table.c.date <= end_date, articles_table.c.description.ilike("%{0}%".format(description_snippet))))
-#    
-#    rp = connection.execute(s).fetchall()
-#    articles_by_name = []
-#    for i in rp:
-#        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-#                                                  name=i.name, date=i.date, 
-#                                                  link=i.link,
-#                                                  description=i.description,
-#                                                  author=i.author,
-#                                                  categoryID = i.categoryID,
-#                                                  category_name = i.category_name,
-#                                                  publication=i.publication)
-#        articles_by_name.append(new_article)
-#    return articles_by_name
     
 def display_articles_by_category_id(start_date, end_date, category_id):
     columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
@@ -404,30 +330,6 @@ def display_articles_by_category_id(start_date, end_date, category_id):
                                               publication=row.publication)
                                                 for row in rp]
     return articles_by_categoryID
-        
-#def display_articles_by_category_name(start_date, end_date, category_name_snippet):
-#    print('category name snippet: ', category_name_snippet)
-#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
-#                articles_table.c.categoryID, articles_table.c.link,
-#                articles_table.c.description, articles_table.c.publication,
-#                articles_table.c.author, categories_table.c.category_name]
-#    s = select(columns)
-#    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-#              articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(category_name_snippet))))
-#              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
-#    rp = connection.execute(s)
-#    #results = rp.fetchall()
-#    
-#    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
-#                                              name=row.name, date=row.date, 
-#                                              link=row.link,
-#                                              description=row.description,
-#                                              author=row.author,
-#                                              categoryID = row.categoryID,
-#                                              category_name = row.category_name,
-#                                              publication=row.publication)
-#                                                for row in rp]
-#    return articles_by_categoryID
     
 def display_articles_by_publication(publication_snippet):
     '''
@@ -543,18 +445,15 @@ def update_article_date(article_id, new_date):
     u = u.values(date=new_date)
     result = connection.execute(u)
     print(result.rowcount)
+    
+def update_category(category_id, new_category_name):
+    '''Updates the name of a category'''
+    u = update(categories_table).where(categories_table.c.categoryID == category_id)
+    u = u.values(category_name = new_category_name)
+    result = connection.execute(u)
+    print(result.rowcount)
 
 #DELETE SECTION - Delete articles and categories
-    
-#def delete_article(article_id):
-#    u = delete(articles_table).where(articles_table.c.articleID == article_id)
-#    result = connection.execute(u)
-#    print(result.rowcount)
-#    
-#def delete_category(category_id):
-#    u = delete(categories_table).where(categories_table.c.categoryID == category_id)
-#    result = connection.execute(u)
-#    print(result.rowcount)
     
 def delete_item(item_id, item_type):
     if item_type == 'article':

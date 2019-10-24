@@ -29,6 +29,34 @@ def read_text(prompt):
     # return the result
     return result
 
+#def read_bool(prompt='y or n', yes='y', no='n', yes_option='confirm', no_option='cancel'):
+#    choice_string = ' '+ '{0} to {1}, {2} to {3} '.format( 
+#                           yes, yes_option, no, no_option)
+#    #The choice_string formats the choices that the user has to make when
+#    #making a yes or no decision
+#    while True:
+#        choice = read_text(prompt=prompt+choice_string+' ')
+#        if choice == yes:
+#            return True
+#        elif choice == no:
+#            return False
+#        else:
+#            print('Please enter {0} to {1}, {1} to {2}')
+
+def read_bool(decision='(y or n)', yes='y', no='n', yes_option='confirm', no_option='cancel'):
+    choice_string = '{0} {1} to {2}, {3} to {4}: '.format(decision,
+                          yes, yes_option, no, no_option)
+    #The choice_string formats the choices that the user has to make when
+    #making a yes or no decision
+    while True:
+        choice = read_text(prompt=choice_string)
+        if choice == yes:
+            return True
+        elif choice == no:
+            return False
+        else:
+            print('Please enter {0} to {1}, {1} to {2}')    
+
 def read_date(prompt):
     '''
     Displays a prompt and reads in a date. Keyboard interrupts (CTRL+C) are
