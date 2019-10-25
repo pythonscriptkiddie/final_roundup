@@ -146,19 +146,12 @@ def display_articles(articles, title_term):
                                  article.description[:35], article.link[:35]))                          
     print()
 
-class Snippet:
-    '''
-    The snippet class will communicate with the database, with snippets passed to
-    sqlalchemy and then searching for the relevant items in the databse.
-    '''
-    variables = []
-    
-    def __init__(self, text):
-        self.text=text
-        self.variable=None
-
 def from_snippet(snippet=None, snippet_type=None, start_date = None,
                  end_date=None):
+    text_snippet_types = ['title', 'description', 'category']
+    numeric_snippet_types = ['category_id']
+    #range_snippet_types = ['date', 'article_id']
+    
     '''
     This function takes a snippet, as well as the snippet type, and retrieves
     a value from the database based on that snippet type. For example, if the
@@ -167,55 +160,35 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
     to replace many of the functions that retrieve data based on text fields.
     '''
     results = None
-    if snippet_type == 'description':
-        if (start_date != None) or (end_date != None):
-            results = db.get_snippet(snippet, snippet_type=snippet_type)
-        else:
-            results = db.get_snippet(snippet, snippet_type=snippet_type, 
+    if (start_date == None) or (end_date == None):
+        results = db.get_snippet(snippet, snippet_type=snippet_type)
+    elif (start_date != None) and (end_date != None):
+        results = db.get_snippet(snippet, snippet_type=snippet_type, 
                                      start_date = start_date,
                                      end_date = end_date)
-    elif snippet_type == 'title':
-        #print(start_date, end_date)
-        if (start_date == None) or (end_date == None):
-            results = db.get_snippet(snippet, snippet_type=snippet_type)
-        else:
-            results = db.get_snippet(snippet, snippet_type=snippet_type, 
-                                     start_date = start_date,
-                                     end_date = end_date)
-    elif snippet_type == 'category':
-        #gets the ARTICLES from a category name, not the category itself
-        if (start_date == None) or (end_date == None):
-            results = db.get_snippet(snippet, snippet_type=snippet_type)
-        else:
-            results = db.get_snippet(snippet, snippet_type=snippet_type, 
-                                     start_date = start_date,
-                                     end_date = end_date)
-    elif snippet_type == 'category_id':
-        #print('category id detected')
-        #gets the ARTICLES from a given category id, not the category itself
-        if (start_date == None) or (end_date == None):
-            results = db.get_snippet(snippet, snippet_type=snippet_type)
-        else:
-            results = db.get_snippet(snippet, snippet_type=snippet_type, 
-                                     start_date = start_date,
-                                     end_date = end_date) 
-        #results = db.get_snippet(snippet, snippet_type='title') #remember it is called name
+    else:
+        print('Invalid date entry')
+        return
     if results == None:
         print('There is no article with that {0}.\n'.format(snippet_type))
     else:
-        if snippet_type == 'title':
+        if snippet_type in text_snippet_types:
             display_articles(results, str('Results for {0}'.format(snippet)))
-        elif snippet_type == 'description':
-            display_articles(results, str('Results for {0}'.format(snippet)))
-        elif snippet_type == 'category':
-            display_articles(results, str('Results for {0}'.format(snippet)))
-        elif snippet_type == 'category_id':
-            category_id = db.cat_from_snippet(snippet, numeric_snippet=False) #retrieve the category for display
+        elif snippet_type in numeric_snippet_types:
+            if snippet_type == 'category_id':
+                #print(snippet)
+                #print(type(snippet))
+                category_id = db.cat_from_snippet(snippet, numeric_snippet=True) #retrieve the category for display
             #this replicates the depricated get_articles_by_category_id function
-            category_name = category_id.category_name #get the name to display
-            display_articles(results, str('Results for {0}'.format(category_name)))
+                category_name = category_id.category_name #get the name to display
+                display_articles(results, str('Results for {0}'.format(category_name)))
         else:
-            print('Search cancelled, returning to main menu.')
+            print('Invalid snippet type')
+            return
+            
+            
+            
+
         
  
 def search_single_date(article_date):
