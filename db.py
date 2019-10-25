@@ -181,18 +181,6 @@ def get_categories():
     rp = connection.execute(s)
     categories_collection=[Category.from_sqlalchemy(categoryID=i[0], category_name=i[1]) for i in rp]
     return categories_collection
-
-def get_category(category_id):
-    #returns a single category
-    s = select([categories_table.c.categoryID,
-        categories_table.c.category_name]).where(categories_table.c.categoryID == category_id)
-    rp = connection.execute(s).fetchone()
-    try:
-        new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
-        return new_category
-    except Exception as e:
-        print('Category not found:', e)
-        return
     
 def cat_from_snippet(snippet, numeric_snippet=True):
     """
@@ -211,24 +199,6 @@ def cat_from_snippet(snippet, numeric_snippet=True):
         return
     try:
         rp = connection.execute(s).fetchone()
-        new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
-        return new_category
-    except Exception as e:
-        print('Category not found:', e)
-        return
-
-def get_category_by_name(category_snippet):
-    '''
-    This function is intended to facilitate the search for articles by category using partial titles
-    It gets the category by name and returns the articles by category if there is such a category.
-    '''
-    #returns a single category
-    s = select([categories_table.c.categoryID,
-        categories_table.c.category_name]).where(categories_table.c.category_name.ilike("%{0}%".format(category_snippet)))
-    rp = connection.execute(s).fetchone()
-    try:
-        #new_category = tuple(rp)[0] #take the single element out of nested tuple
-        #new_category = make_category(rp)
         new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
         return new_category
     except Exception as e:
