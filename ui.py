@@ -459,9 +459,6 @@ Old title: {1}'''.format(new_title, article.name))
             print('article update cancelled')
     
 def finalize_article_descriptions(start_date, end_date):
-    #undescribed = db.get_date_range_undescribed_articles(description_snippet='Not specified',
-    #                                                     start_date=start_date,
-    #                                                     end_date=end_date)
     undescribed = db.get_snippet(snippet='Not specified',
                                  start_date=start_date,
                                  end_date=end_date,
@@ -867,21 +864,15 @@ search_id 18 will find the article with ID 18''')
         
     def help_id_range(self):
         print('enter id_range [starting id]-[ending id]')
-        #print('Enter id_range without any arguments')
         print('id_range returns a list of articles with an ID greater than')
         print('the minimum value and less than the maximum value')
         
     def do_search_name(self, command):
-        #from_snippet(snippet=command, snippet_type = 'title')
-        #display_articles_by_name(command)
         try:
             snippet, dates = split_command(command, splitter = '-')
             snippet = snippet.lstrip()
             snippet = snippet.rstrip()
-            #print(snippet)
             start_date, end_date = parse_dates(dates)
-            #print(start_date, type(start_date))
-            #print(end_date, type(end_date))
             from_snippet(snippet=snippet, start_date=start_date,
                                      end_date=end_date, snippet_type='title')
         except TypeError as e:
@@ -958,10 +949,7 @@ search_id 18 will find the article with ID 18''')
             snippet, dates = split_command(command, splitter = '-')
             snippet = snippet.lstrip()
             snippet = snippet.rstrip()
-            #print(snippet)
             start_date, end_date = parse_dates(dates)
-            #print(start_date, type(start_date))
-            #print(end_date, type(end_date))
             from_snippet(snippet=snippet, start_date=start_date,
                                      end_date=end_date, snippet_type='description')
         except TypeError as e:
@@ -975,7 +963,6 @@ search_id 18 will find the article with ID 18''')
         
     def do_import_from_csv(self, command):
         del command
-        #print('import function temporarily disabled')
         get_csv_in_directory()
     
     def help_import_from_csv(self):
@@ -984,8 +971,6 @@ without any suffix''')
     
     def do_add(self, command):
         from_newspaper(link=command)
-        #Article.add_from_newspaper(link=command)
-        #add_article_from_newspaper(link=command)
         
     def help_add(self):
         print('''Enter add [link] to add articles:

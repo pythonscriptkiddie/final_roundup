@@ -193,7 +193,29 @@ def get_category(category_id):
     except Exception as e:
         print('Category not found:', e)
         return
-
+    
+def cat_from_snippet(snippet, numeric_snippet=True):
+    """
+    This function is intended to replace the "get_category_by_name" and the
+    "get_category" function with a single function. If numeric_snippet == True
+    Then it searches by categoryID, otherwise by category name.
+    """
+    if numeric_snippet == True:
+        s = select([categories_table.c.categoryID,
+        categories_table.c.category_name]).where(categories_table.c.categoryID == snippet)
+    elif numeric_snippet == False:    
+        s = select([categories_table.c.categoryID,
+        categories_table.c.category_name]).where(categories_table.c.category_name.ilike("%{0}%".format(snippet)))
+    else:
+        print('Category not found.')
+        return
+    try:
+        rp = connection.execute(s).fetchone()
+        new_category = Category.from_sqlalchemy(categoryID=rp[0], category_name=rp[1])
+        return new_category
+    except Exception as e:
+        print('Category not found:', e)
+        return
 
 def get_category_by_name(category_snippet):
     '''
