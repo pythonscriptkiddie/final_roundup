@@ -90,12 +90,13 @@ def from_newspaper(link):
     print('KEYWORDS: ', keywords)
     display_categories()
     category_id = btc.read_text("Category ID: ")
-    category = db.get_category(category_id)
+    category = db.cat_from_snippet(category_id, numeric_snippet=True)
+    #category = db.get_category(category_id)
     if category == None:
         print('There is no category with that ID. article NOT added.\n')
         return
-    description_choice = btc.read_text('View article description? y/n: ')
-    if description_choice == 'y':
+    summary_choice = btc.read_text('View article summary before writing description? y/n: ')
+    if summary_choice == 'y':
         print('Title: {0}'.format(name))
         print('Summary: {0}'.format(summary))
         print('Keywords: {0}'.format(keywords))
@@ -183,6 +184,7 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
                                      start_date = start_date,
                                      end_date = end_date)
     elif snippet_type == 'category':
+        #gets the ARTICLES from a category name, not the category itself
         if (start_date == None) or (end_date == None):
             results = db.get_snippet(snippet, snippet_type=snippet_type)
         else:
@@ -191,6 +193,7 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
                                      end_date = end_date)
     elif snippet_type == 'category_id':
         #print('category id detected')
+        #gets the ARTICLES from a given category id, not the category itself
         if (start_date == None) or (end_date == None):
             #category_id = db.get_category(snippet)
             results = db.get_snippet(snippet, snippet_type=snippet_type)
@@ -209,7 +212,7 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
         elif snippet_type == 'category':
             display_articles(results, str('Results for {0}'.format(snippet)))
         elif snippet_type == 'category_id':
-            category_id = db.get_category(snippet) #retrieve the category for display
+            category_id = db.cat_from_snippet(snippet, numeric_snippet=False) #retrieve the category for display
             #this replicates the depricated get_articles_by_category_id function
             category_name = category_id.category_name #get the name to display
             display_articles(results, str('Results for {0}'.format(category_name)))
@@ -288,8 +291,14 @@ def display_articles_by_publication(publication_snippet=None):
             display_articles(publications, "PUBLICATION: " + str('Error: {0}'.format(e)))
 
 def manual_add(link=None):
+    '''
+    Add a read_bool choice at the end to confirm that the user wants to add
+    the article.
+    '''
+    display_categories()
     category = btc.read_int('Enter category for article: ')
-    category = db.get_category(category)
+    #category = db.get_category(category)
+    category = db.cat_from_snippet(category, numeric_snippet=True)
     new_article = Article.manual_add(link=link, category=category)
     db.add_article(new_article)
     print(new_article.title + " was added to database.\n")
@@ -333,6 +342,7 @@ def update_article_name(article_id):
             print('Edit cancelled, article title unchanged')
             
 def update_article_category(article_id):
+    #Add read_bool to confirm the user's choice
     article = db.get_article(article_id)
     if article == None:
         print("There is no article with that ID. article NOT found.\n")
@@ -342,8 +352,10 @@ def update_article_category(article_id):
         article_choice = btc.read_int_ranged('1 to edit article category, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
+            display_categories()
             new_category_id = btc.read_int('Enter new category_id: ')
-            result = db.get_category(new_category_id)
+            #result = db.get_category(new_category_id)
+            result = db.cat_from_snippet(new_category_id)
             #Add in some text that is displayed to make it clear that the category is being updated
             if result == None:
                 print('There is no category with that ID, article category NOT updated.\n')
@@ -578,11 +590,11 @@ def get_date_range_category_stats(start_date, end_date):
         print(e)
         return
     
-def get_category_id(category_name):
-    '''Takes the category name and returns the category ID'''
-    new_category = db.get_category_by_name(category_name)
-    category_id = new_category.CategoryID
-    return category_id
+#def get_category_id(category_name):
+#    '''Takes the category name and returns the category ID'''
+#    new_category = db.cat_from_snippet(category_name, numeric_snippet=False)
+#    category_id = new_category.CategoryID
+#    return category_id
     
 def get_csv_in_directory():
     file_list = glob.glob('*.csv')
@@ -631,7 +643,8 @@ def csv_item_to_article(csv_list_item):
     new_article_link = new_article_news_item.url
     new_article_title = new_article_news_item.title
     print(new_article_title)
-    new_article_category = get_category_id(csv_list_item[1])
+    new_article_category = db.cat_from_snippet(csv_list_item[1], numeric_snippet=False)
+    new_article_category = new_article_category.CategoryID
     new_article_datetime = parse(csv_list_item[2])
     new_article_date = new_article_datetime.date()
 
@@ -667,7 +680,8 @@ def add_category():
 def update_category(category_id=0):
     if category_id == 0:
         category_id = int(input("category ID: "))
-    category = db.get_category(category_id)
+    #category = db.get_category(category_id)
+    category = db.cat_from_snippet(category_id, numeric_snippet=True)
     #articles = db.get_articles_by_category_id(category_id)
     #display_articles(articles, category.category_name.upper())
     print('Current category name: {0}'.format(category.category_name))
