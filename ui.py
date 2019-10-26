@@ -24,11 +24,6 @@ from dateutil.parser import parse
 '''perhaps create a menu that appears when you choose the edit article option
 then gives you choice of what to edit'''
 
-        
-def display_menu(title, menu_items, end='   '):
-    print(title.upper())
-    for i in menu_items:
-        print(i, end=end)
 
 def from_newspaper(link):
     '''
@@ -186,32 +181,27 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
             print('Invalid snippet type')
             return
             
-            
-            
-
+# 
+#def search_single_date(article_date):
+#    assert type(article_date) == datetime.date
+#    if article_date == None:
+#        print('Date entered incorrectly')
+#    else:
+#        articles = db.get_articles_by_date_range(start_date=article_date,
+#                                                 end_date = None)
+#        formatted_date = article_date.strftime("%m/%d/%Y")
+#        #print(articles)
+#        display_articles(articles, formatted_date)
         
- 
-def search_single_date(article_date):
-    assert type(article_date) == datetime.date
-    if article_date == None:
-        print('Date entered incorrectly')
-    else:
-        articles = db.get_articles_by_date(article_date)
-        formatted_date = article_date.strftime("%m/%d/%Y")
-        #print(articles)
-        display_articles(articles, formatted_date)
-        
-def search_date_range(start_date, end_date):
-    try:
-        assert start_date <= end_date
-    except AssertionError:
-        print('Start date must come before end date')
-        return
-    articles = db.get_articles_by_date_range(start_date, end_date)
+def search_date_range(start_date, end_date=None):
+    articles = db.get_articles_by_date(start_date, end_date)
     formatted_start_date = start_date.strftime("%m/%d/%Y")
-    formatted_end_date = end_date.strftime("%m/%d/%Y")
-    display_articles(articles, str('{0} to {1}'.format(formatted_start_date,
-                                   formatted_end_date)))    
+    if end_date != None:
+        formatted_end_date = end_date.strftime("%m/%d/%Y")
+        display_articles(articles, str('{0} to {1}'.format(formatted_start_date,
+                                       formatted_end_date)))
+    else:
+        display_articles(articles, formatted_start_date)
     
 def display_article_by_id(article_id=None):
     if not article_id:
@@ -733,6 +723,8 @@ def export_roundup_by_category():
     
 
 def get_articles_by_category(category=None, start_date=None, end_date=None):
+    #This is a function slated for replacement as I streamline the codebase
+    #of this app.
     if not category:
         category = btc.read_text("Enter category name or number here:  ")
     if not start_date:
@@ -875,21 +867,27 @@ search_id 18 will find the article with ID 18''')
         print('search_name somalia - 08/01/2019 08/31/2019')
             
     def do_search_date(self, command):
-        try:
-            dates = parse_dates(command)
-            if len(dates) == 1:
-                search_single_date(dates[0])
-            elif len(dates) == 2:
-                start_date, end_date = dates[0], dates[1]
-                print(start_date, end_date)
-                if start_date > end_date:
-                    print('start date must come before end date') #starting date must come first
-                    return
-                search_date_range(start_date, end_date)
-        except ValueError as v:
-            print(v)
-        except TypeError as t:
-            print(t, 'Invalid date entered')
+        '''
+        Enter "search_date 08/01/2019 08/30/2019" to search for all August
+        articles. Enter "search_date 8/01/2019" to search for just that day.
+        '''
+        #try:
+        dates = parse_dates(command)
+        if len(dates) == 1:
+            #search_single_date(dates[0])
+            print(dates)
+            search_date_range(dates[0], end_date=None)
+        elif len(dates) == 2:
+            start_date, end_date = dates[0], dates[1]
+            print(start_date, end_date)
+            if start_date > end_date:
+                print('start date must come before end date') #starting date must come first
+                return
+            search_date_range(start_date, end_date)
+        #except ValueError as v:
+         #   print(v)
+        #except TypeError as t:
+          #  print(t, 'Invalid date entered')
             
     def help_search_date(self):
         print('Enter search_date [date] to search for a single date')
