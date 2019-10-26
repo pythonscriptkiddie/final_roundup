@@ -219,7 +219,9 @@ def display_article_by_id_range(starting_id, ending_id):
     except AssertionError:
         print('Starting ID must be less than ending ID. Return to main menu.')
         return
-    articles = db.get_articles_by_id_range(starting_id, ending_id)
+    articles = db.get_articles_range(range_low=starting_id,
+                                        range_high=ending_id,
+                                        range_type='article_id')
     if articles == None:
         print('No articles were found in that ID range.')
     else:

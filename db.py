@@ -89,43 +89,83 @@ def add_category(category):
     print(result.rowcount)
 
 #READING SECTION - read/get articles and categories
-    
+
 def get_article(article_id):
-    print(articles_table.c.articleID)
-    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.articleID == article_id)
-    rp = connection.execute(s).fetchone()
-    try:
-        #ew_article = make_article(rp)
-        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
-                                              name=rp.name, date=rp.date, 
-                                              link=rp.link,
-                                              description=rp.description,
-                                              author=rp.author,
-                                              categoryID = rp.categoryID,
-                                              category_name = rp.category_name,
-                                              publication=rp.publication)
-        return new_article
-    except TypeError:
-        print('Type error')
-        return
-    except AttributeError:
-        print('Attribute error')
-        return
+    article_list = get_articles_range(range_low=article_id, range_high=None, range_type='article_id')
+    article = article_list[0]
+    return article
+    #pass
     
-def get_articles_by_id_range(starting_id, ending_id):
+#def get_article(article_id):
+#    print(articles_table.c.articleID)
+#    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.articleID == article_id)
+#    rp = connection.execute(s).fetchone()
+#    try:
+#        #ew_article = make_article(rp)
+#        new_article = Article.from_sqlalchemy(articleID=rp.articleID, 
+#                                              name=rp.name, date=rp.date, 
+#                                              link=rp.link,
+#                                              description=rp.description,
+#                                              author=rp.author,
+#                                              categoryID = rp.categoryID,
+#                                              category_name = rp.category_name,
+#                                              publication=rp.publication)
+#        return new_article
+#    except TypeError:
+#        print('Type error')
+#        return
+#    except AttributeError:
+#        print('Attribute error')
+#        return
+    
+#def get_articles_by_id_range(starting_id, ending_id):
+#    print(articles_table.c.articleID)
+#    columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= starting_id, 
+#                     articles_table.c.articleID <= ending_id))
+#    rp = connection.execute(s).fetchall()
+#    articles_by_id_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+#                                              name=row.name, date=row.date, 
+#                                              link=row.link,
+#                                              description=row.description,
+#                                              author=row.author,
+#                                              categoryID = row.categoryID,
+#                                              category_name = row.category_name,
+#                                              publication=row.publication)
+#                                                for row in rp]
+#    #articles_by_id_range = [make_article(row) for row in rp]
+#    return articles_by_id_range
+
+def get_articles_range(range_low, range_high=None, range_type='article_id'):
+    #range_types = [{'date': , 'article_id'}]
+    '''Get the articles from a range of values, such as a range of dates
+    or a range of article IDs.'''
     print(articles_table.c.articleID)
     columns= [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
               articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
               articles_table.c.author, articles_table.c.publication]
     s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= starting_id, 
-                     articles_table.c.articleID <= ending_id))
+    if range_type == 'article_id':
+        if range_high == None:
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.articleID == range_low)
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.articleID >= range_low, 
+                 articles_table.c.articleID <= range_high))
+    elif range_type == 'date':
+        if range_high == None: 
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == range_low)
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= range_low,
+                      articles_table.c.date <= range_high))
     rp = connection.execute(s).fetchall()
-    articles_by_id_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+    articles_by_range = [Article.from_sqlalchemy(articleID=row.articleID, 
                                               name=row.name, date=row.date, 
                                               link=row.link,
                                               description=row.description,
@@ -135,7 +175,7 @@ def get_articles_by_id_range(starting_id, ending_id):
                                               publication=row.publication)
                                                 for row in rp]
     #articles_by_id_range = [make_article(row) for row in rp]
-    return articles_by_id_range
+    return articles_by_range
 
 #def get_articles_by_date(article_date):
 #    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
@@ -155,31 +195,35 @@ def get_articles_by_id_range(starting_id, ending_id):
 #                                                for row in rp]
 #    return articles_by_date
 
-def get_articles_by_date(start_date, end_date=None):
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    if end_date != None:
-        print('end date detected')
-        s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-                  articles_table.c.date <= end_date))
-    elif end_date == None:
-        print('no end date')
-        s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == start_date)
-    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
-    rp = connection.execute(s).fetchall()
-    articles_by_date_range = [Article.from_sqlalchemy(articleID=row.articleID, 
-                                              name=row.name, date=row.date, 
-                                              link=row.link,
-                                              description=row.description,
-                                              author=row.author,
-                                              categoryID = row.categoryID,
-                                              category_name = row.category_name,
-                                              publication=row.publication)
-                                                for row in rp]
-    #articles_by_date = [make_article(row) for row in rp]
-    return articles_by_date_range
+def get_articles_by_date(start_date, end_date):
+    return get_articles_range(range_low=start_date, range_high=end_date,
+                              range_type='date')
+
+#def get_articles_by_date_old(start_date, end_date=None):
+#    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
+#              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
+#              articles_table.c.author, articles_table.c.publication]
+#    s = select(columns)
+#    if end_date != None:
+#        print('end date detected')
+#        s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+#                  articles_table.c.date <= end_date))
+#    elif end_date == None:
+#        print('no end date')
+#        s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == start_date)
+#    #s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.date == article_date)
+#    rp = connection.execute(s).fetchall()
+#    articles_by_date_range = [Article.from_sqlalchemy(articleID=row.articleID, 
+#                                              name=row.name, date=row.date, 
+#                                              link=row.link,
+#                                              description=row.description,
+#                                              author=row.author,
+#                                              categoryID = row.categoryID,
+#                                              category_name = row.category_name,
+#                                              publication=row.publication)
+#                                                for row in rp]
+#    #articles_by_date = [make_article(row) for row in rp]
+#    return articles_by_date_range
 
 def get_categories():
     s = select([categories_table.c.categoryID, categories_table.c.category_name])
@@ -232,28 +276,28 @@ def get_articles_for_roundup(start_date, end_date, category_id):
                                                 for row in rp]
     return articles_for_roundup
 
-def display_article_by_name(title_snippet):
-    '''
-    This function is intended to facilitate the search for articles using partial titles
-    '''
-    stmt = select([articles_table]).\
-    where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
-    
-    rp = connection.execute(stmt).fetchone()
-    try:
-        #article_by_name = make_article(rp)
-        article_by_name = Article.from_sqlalchemy(articleID=rp.articleID, 
-                                                  name=rp.name, date=rp.date, 
-                                                  link=rp.link,
-                                                  description=rp.description,
-                                                  author=rp.author,
-                                                  categoryID = rp.categoryID,
-                                                  category_name = rp.category_name,
-                                                  publication= rp.publication)
-        return article_by_name
-    except Exception as e:
-        print(e)
-        return
+#def display_article_by_name(title_snippet):
+#    '''
+#    This function is intended to facilitate the search for articles using partial titles
+#    '''
+#    stmt = select([articles_table]).\
+#    where(articles_table.c.name.ilike("%{0}%".format(title_snippet)))
+#    
+#    rp = connection.execute(stmt).fetchone()
+#    try:
+#        #article_by_name = make_article(rp)
+#        article_by_name = Article.from_sqlalchemy(articleID=rp.articleID, 
+#                                                  name=rp.name, date=rp.date, 
+#                                                  link=rp.link,
+#                                                  description=rp.description,
+#                                                  author=rp.author,
+#                                                  categoryID = rp.categoryID,
+#                                                  category_name = rp.category_name,
+#                                                  publication= rp.publication)
+#        return article_by_name
+#    except Exception as e:
+#        print(e)
+#        return
 
 def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
     #if start_date:
