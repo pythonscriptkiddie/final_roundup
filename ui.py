@@ -306,12 +306,17 @@ def update_article_name(article_id):
                 print('Title update cancelled, article title unchanged.')
                 return
             elif title_choice == 2:
-                db.update_article_name(article_id, updated_title)
+                db.update_article(article_id=article_id,
+                                  new_value=updated_title,
+                                  update_type = 'name')
                 print('Title update complete. Return to main menu.')
             elif title_choice == 3:
                 new_title = btc.read_text('Enter new title or . to cancel: ')
                 if new_title != '.':
-                    db.update_article_name(article_id, new_title)
+                    #db.update_article_name(article_id, new_title)
+                    db.update_article(article_id=article_id,
+                                  new_value=new_title, #taking the title we just obtained
+                                  update_type = 'name')
                 else:
                     print('Edit cancelled, return to main menu')
                     return
@@ -336,7 +341,8 @@ def update_article_category(article_id):
             if result == None:
                 print('There is no category with that ID, article category NOT updated.\n')
             else:
-                db.update_article_category(article_id, new_category_id)
+                db.update_article(article_id, new_category_id,
+                                  update_type='category_id')
         else:
             print('Edit cancelled, article title unchanged')
             
@@ -357,7 +363,10 @@ def update_article_description(article_id):
             new_description = btc.read_text('Enter new description or "." to cancel: ')
             
             if new_description != '.':
-                db.update_article_description(article_id, new_description)
+                #db.update_article_description(article_id, new_description)
+                db.update_article(article_id=article_id,
+                                  new_value = new_description,
+                                  update_type = 'description')
                 print('Article description updated.\n')
             else:
                 print('Edit cancelled, article description unchanged')
@@ -376,7 +385,8 @@ def update_article_author(article_id):
         if article_choice == 1:
             new_author = btc.read_text('Enter new author name or . to cancel: ')
             if new_author != '.':
-                db.update_article_author(article_id, new_author)
+                db.update_article(article_id=article_id, new_value=new_author,
+                                  update_type = 'author')
         else:
             print('Edit cancelled, article title unchanged')
 
@@ -392,7 +402,9 @@ def update_article_publication(article_id):
         if article_choice == 1:
             new_publication = btc.read_text('Enter new publication name or . to cancel: ')
             if new_publication != '.':
-                db.update_article_publication(article_id, new_publication)
+                db.update_article(article_id=article_id,
+                                  new_value=new_publication,
+                                  update_type = 'publication')
                 print(article_id, new_publication)
         else:
             print('Edit cancelled, article title unchanged')
@@ -411,7 +423,9 @@ def update_article_date(article_id):
             date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date),
                                               min_value=1, max_value=2)
             if date_choice == 1:
-                db.update_article_date(article_id, new_date)
+                db.update_article(article_id=article_id,
+                                       new_value=new_date,
+                                       update_type='date')
                 print('Update complete.\n')
             elif date_choice == 2:
                 print('Edit cancelled, article date unchanged')
@@ -439,7 +453,8 @@ Old title: {1}'''.format(new_title, article.name))
             title_choice = btc.read_int_ranged('1 to replace title, 2 to keep original title: ',
                                                min_value = 1, max_value = 2)
             if title_choice == 1:
-                db.update_article_name(article_id, new_title)
+                db.update_article(article_id=article_id, new_value=new_title,
+                                  update_type = 'name')
             elif title_choice == 2:
                 print('article update cancelled')
                 

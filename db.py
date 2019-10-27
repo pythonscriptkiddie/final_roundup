@@ -92,8 +92,13 @@ def add_category(category):
 
 def get_article(article_id):
     article_list = get_articles_range(range_low=article_id, range_high=None, range_type='article_id')
-    article = article_list[0]
-    return article
+    try:
+        article = article_list[0]
+        return article
+    except IndexError:
+        print('Invalid article selection. Return to main menu.')
+        return
+    
     #pass
     
 #def get_article(article_id):
@@ -451,41 +456,65 @@ def get_article_count(category_id=None, start_date=None, end_date=None):
 
 #UPDATE SECTION - Update articles and categories
 
-def update_article_name(article_id, new_article_name):
+def update_article(article_id, new_value, update_type=None):
+    '''
+    This function provides update capacity for the different fields of an
+    article object that the user is able to change.
+    '''
     u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(name=new_article_name)
+    if update_type == None:
+        raise Exception('Update type not specified')
+    elif update_type == 'name':
+        u = u.values(name=new_value)
+    elif update_type == 'description':
+        u = u.values(description=new_value)
+    elif update_type == 'author':
+        u = u.values(author=new_value)
+    elif update_type == 'publication':
+        u = u.values(publication = new_value)
+    elif update_type == 'category_id':
+        u = u.values(categoryID=new_value)
+    elif update_type == 'date':
+        u = u.values(date=new_value)
     result = connection.execute(u)
     print(result.rowcount)
+        
 
-def update_article_description(article_id, new_description):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(description=new_description)
-    result = connection.execute(u)
-    print(result.rowcount)
-    
-def update_article_author(article_id, new_author):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(author=new_author)
-    result = connection.execute(u)
-    print(result.rowcount)
-    
-def update_article_publication(article_id, new_publication):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(publication = new_publication)
-    result = connection.execute(u)
-    print(result.rowcount)
-    
-def update_article_category(article_id, new_category):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(categoryID=new_category)
-    result = connection.execute(u)
-    print(result.rowcount)
-
-def update_article_date(article_id, new_date):
-    u = update(articles_table).where(articles_table.c.articleID == article_id)
-    u = u.values(date=new_date)
-    result = connection.execute(u)
-    print(result.rowcount)
+#def update_article_name(article_id, new_article_name):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(name=new_article_name)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#
+#def update_article_description(article_id, new_description):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(description=new_description)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#    
+#def update_article_author(article_id, new_author):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(author=new_author)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#    
+#def update_article_publication(article_id, new_publication):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(publication = new_publication)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#    
+#def update_article_category(article_id, new_category):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(categoryID=new_category)
+#    result = connection.execute(u)
+#    print(result.rowcount)
+#
+#def update_article_date(article_id, new_date):
+#    u = update(articles_table).where(articles_table.c.articleID == article_id)
+#    u = u.values(date=new_date)
+#    result = connection.execute(u)
+#    print(result.rowcount)
     
 def update_category(category_id, new_category_name):
     '''Updates the name of a category'''
