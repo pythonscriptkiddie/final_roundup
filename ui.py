@@ -24,6 +24,11 @@ from dateutil.parser import parse
 '''perhaps create a menu that appears when you choose the edit article option
 then gives you choice of what to edit'''
 
+def from_pool(links):
+    '''
+    Planned multithreaded article download feature.
+    '''
+    pass
 
 def from_newspaper(link):
     '''
