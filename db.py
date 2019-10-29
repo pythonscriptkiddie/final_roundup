@@ -69,8 +69,12 @@ def add_article(article):
     print(result.rowcount)
     
 def add_article_from_csv(article):
+    '''This function exists solely to input articles from csv files. The key
+    difference between it and the regular add_article function is the different
+    categoryID values.'''
     ins = articles_table.insert().values(
-            categoryID=article.category,
+            categoryID=article.category, #if you try to use the regular
+            #add article function, this line will raise an exception
             name=article.name,
             #print(article.name, 'caught by database'),
             date=article.date,

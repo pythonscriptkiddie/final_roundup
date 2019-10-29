@@ -361,7 +361,7 @@ def update_article_description(article_id):
         article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
-            description_choice = btc.read_text('View article description? y/n: ')
+            description_choice = btc.read_text('View article summary? y/n: ')
             if description_choice == 'y':
                 article_summary = na.get_article_summary(article.link)
                 print(article_summary)
@@ -474,7 +474,9 @@ def finalize_article_descriptions(start_date, end_date):
     #We call the get_snippet function with "Not specified" as the description
     #because that's the description for all undescribed articles imported
     #from csv files
-    undescribed_articles = len(undescribed)
+    undescribed_articles = db.get_undescribed_article_count(description_snippet='Not specified',
+                                                            start_date = start_date,
+                                                            end_date = end_date)
     print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
         print('Undescribed articles remaining: {0}'.format(undescribed_articles))
@@ -486,23 +488,23 @@ def finalize_article_descriptions(start_date, end_date):
             break
         
 #add function to finalize articles for one month
-def finalize_desc_month(command):
-    if not command or command == '':
-        new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
-        new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
-        articles_to_finalize = db.get_articles_by_month(month=new_month, year=new_year)
-        articles_remaining = len(articles_to_finalize)
-        for article in articles_to_finalize:
-            print('{0} unreviewed articles'.format(articles_remaining))
-            
-            update_article_description(article.ArticleID)
-            description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
-                                                     1, 2)
-            
-            articles_remaining -= 1
-            if description_choice == 2:
-                print('Update descriptions cancelled')
-                break
+#def finalize_desc_month(command):
+#    if not command or command == '':
+#        new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
+#        new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
+#        articles_to_finalize = db.get_articles_by_month(month=new_month, year=new_year)
+#        articles_remaining = len(articles_to_finalize)
+#        for article in articles_to_finalize:
+#            print('{0} unreviewed articles'.format(articles_remaining))
+#            
+#            update_article_description(article.ArticleID)
+#            description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
+#                                                     1, 2)
+#            
+#            articles_remaining -= 1
+#            if description_choice == 2:
+#                print('Update descriptions cancelled')
+#                break
 
         
 def finalize_title_updates(month, year):
@@ -596,13 +598,16 @@ def get_csv_in_directory():
     if importing_file_name != '.':
         filename='{0}.csv'.format(importing_file_name)
         csv_articles = create_csv_list(filename)
-        print(csv_articles)
-        print('Articles to import:')
+        #print(csv_articles)
+        no_articles_found = len(csv_articles)
+        print('{0} articles to be imported:'.format(no_articles_found))
         try:
             for article in csv_articles:
                 try:
                     csv_article = csv_item_to_article(article)
                     db.add_article_from_csv(csv_article)
+                    #db.add_article(article) #regular add_article function
+                    #did not work here
                     print(csv_article.name + " was added to database.\n")
                 except IndexError:
                     print('Add article failed')
@@ -842,6 +847,10 @@ def parse_dates(arg):
         return
 
 class RGenCMD(cmd.Cmd):
+    '''
+    This is the command line interface. Everything below this is for command
+    line items.
+    '''
         
     intro = "Welcome to RoundupGenerator 3.2"
     prompt = "(RoundupGenerator) "
@@ -1079,14 +1088,16 @@ will return to the main menu.
             print(e)
     
     def do_complete_desc(self, command):
-        start_date, end_date = parse_dates(command)
-    
-        finalize_article_descriptions(start_date=start_date, end_date=end_date)
+        try:
+            start_date, end_date = parse_dates(command)
+            finalize_article_descriptions(start_date=start_date, end_date=end_date)
+        except ValueError:
+            print('Please enter starting and ending dates')
             
     
     def help_complete_desc(self):
-        print('finalize [month], [year]')
-        print('finalize 6 2019 : finalizes the June 2019 articles')
+        print('finalize [start_date], [end_date]')
+        print('finalize 09/01/2019 09/30/2019 : finalizes the September 2019 articles')
         
     def do_export(self, command):
         export_interface(command)
