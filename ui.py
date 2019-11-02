@@ -378,6 +378,7 @@ def update_article_description(article_id):
         else:
             print('Edit cancelled, article description unchanged')
 
+
 def update_article_author(article_id):
     article = db.get_article(article_id)
     if article == None:
@@ -679,12 +680,14 @@ def update_category(category_id=0):
     print('Current category name: {0}'.format(category.category_name))
     new_category_name = btc.read_text("Enter new category name or '.' to cancel: ")
     if new_category_name != '.':
-        update_choice = btc.read_int_ranged("1 to change article name to {0}, 2 to cancel: ".format(new_category_name),
-                                            1, 2)
-        if update_choice == 1:
+        update_choice = btc.read_bool(decision='Update category name from {0} to {1}?'.format(),
+                                      yes='1', no='2', yes_option='update', no_option='cancel')
+        #update_choice = btc.read_int_ranged("1 to change article name to {0}, 2 to cancel: ".format(new_category_name),
+        #                                    1, 2)
+        if update_choice == True:
             db.update_category(category_id, new_category_name)
             print('Category update complete\n')
-        elif update_choice == 2:
+        elif update_choice == False:
             print('Update cancelled.\n')
 
 def delete_category():

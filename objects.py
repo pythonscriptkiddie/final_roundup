@@ -402,6 +402,12 @@ class Category:
     @property
     def name(self):
         return self.category_name
+
+class View:
+    '''
+    Shows the data about an article on the screen
+    '''
+    pass
     
 #    @staticmethod
 #    def display_categories(command=''):
