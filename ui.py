@@ -176,8 +176,6 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
             display_articles(results, str('Results for {0}'.format(snippet)))
         elif snippet_type in numeric_snippet_types:
             if snippet_type == 'category_id':
-                #print(snippet)
-                #print(type(snippet))
                 category_id = db.cat_from_snippet(snippet, numeric_snippet=True) #retrieve the category for display
             #this replicates the depricated get_articles_by_category_id function
                 category_name = category_id.category_name #get the name to display
@@ -185,18 +183,6 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
         else:
             print('Invalid snippet type')
             return
-            
-# 
-#def search_single_date(article_date):
-#    assert type(article_date) == datetime.date
-#    if article_date == None:
-#        print('Date entered incorrectly')
-#    else:
-#        articles = db.get_articles_by_date_range(start_date=article_date,
-#                                                 end_date = None)
-#        formatted_date = article_date.strftime("%m/%d/%Y")
-#        #print(articles)
-#        display_articles(articles, formatted_date)
         
 def search_date_range(start_date, end_date=None):
     articles = db.get_articles_by_date(start_date, end_date)
@@ -378,7 +364,6 @@ def update_article_description(article_id):
         else:
             print('Edit cancelled, article description unchanged')
 
-
 def update_article_author(article_id):
     article = db.get_article(article_id)
     if article == None:
@@ -488,26 +473,6 @@ def finalize_article_descriptions(start_date, end_date):
             print('Update descriptions cancelled')
             break
         
-#add function to finalize articles for one month
-#def finalize_desc_month(command):
-#    if not command or command == '':
-#        new_month = btc.read_int_ranged('Enter new month: ', min_value = 1, max_value = 12)
-#        new_year = btc.read_int_ranged('Enter new year: ', min_value = 1, max_value = 2100)
-#        articles_to_finalize = db.get_articles_by_month(month=new_month, year=new_year)
-#        articles_remaining = len(articles_to_finalize)
-#        for article in articles_to_finalize:
-#            print('{0} unreviewed articles'.format(articles_remaining))
-#            
-#            update_article_description(article.ArticleID)
-#            description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(articles_remaining),
-#                                                     1, 2)
-#            
-#            articles_remaining -= 1
-#            if description_choice == 2:
-#                print('Update descriptions cancelled')
-#                break
-
-        
 def finalize_title_updates(month, year):
     articles = db.get_articles_by_month(month=month, year=year)
     articles_remaining = len(articles)
@@ -533,8 +498,6 @@ def get_category_chart(start_date, end_date):
     categories = db.get_categories()
     start_date_pretty = start_date.strftime("%m/%d/%Y")
     end_date_pretty = end_date.strftime("%m/%d/%Y")
-    #total_articles = len(db.get_articles_by_date_range(start_date,
-    #                                                   end_date))
     category_info = [[category.category_name,
                      db.get_article_count(category_id=category.CategoryID,
                                                   start_date=start_date,
@@ -905,10 +868,8 @@ search_id 18 will find the article with ID 18''')
         Enter "search_date 08/01/2019 08/30/2019" to search for all August
         articles. Enter "search_date 8/01/2019" to search for just that day.
         '''
-        #try:
         dates = parse_dates(command)
         if len(dates) == 1:
-            #search_single_date(dates[0])
             print(dates)
             search_date_range(dates[0], end_date=None)
         elif len(dates) == 2:
@@ -918,10 +879,6 @@ search_id 18 will find the article with ID 18''')
                 print('start date must come before end date') #starting date must come first
                 return
             search_date_range(start_date, end_date)
-        #except ValueError as v:
-         #   print(v)
-        #except TypeError as t:
-          #  print(t, 'Invalid date entered')
             
     def help_search_date(self):
         print('Enter search_date [date] to search for a single date')
