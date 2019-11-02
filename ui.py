@@ -870,11 +870,11 @@ search_id 18 will find the article with ID 18''')
         '''
         dates = parse_dates(command)
         if len(dates) == 1:
-            print(dates)
+            #print(dates)
             search_date_range(dates[0], end_date=None)
         elif len(dates) == 2:
             start_date, end_date = dates[0], dates[1]
-            print(start_date, end_date)
+            #print(start_date, end_date)
             if start_date > end_date:
                 print('start date must come before end date') #starting date must come first
                 return
