@@ -692,7 +692,8 @@ def category_interface(command):
             print('Invalid suffix for category menu')
 
 def export_interface(command):
-    export_commands = {'date': export_roundup_by_date, 'category' : export_roundup_by_category}
+    export_commands = {'date': export_roundup_by_date,
+                       'category' : export_roundup_by_category}
     
     if not command:
         print('Enter command')
