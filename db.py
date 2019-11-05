@@ -36,9 +36,9 @@ def connect():
                 Column('categoryID', ForeignKey('Categories.categoryID'))
                 )
         categories_table = Table('Categories', metadata,
-                   Column('categoryID', Integer(), primary_key=True),
-                   Column('category_name', String(50), default=None)
-                   )
+                Column('categoryID', Integer(), primary_key=True),
+                Column('category_name', String(50), default=None)
+                )
         metadata.create_all(engine)
         connection = engine.connect()
 
