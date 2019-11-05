@@ -226,6 +226,18 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
         else:
             s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
               articles_table.c.date <= end_date, categories_table.c.category_name.ilike("%{0}%".format(snippet))))
+    elif snippet_type == 'publication':
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.publication.ilike("%{0}%".format(snippet)))
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, articles_table.c.publication.ilike("%{0}%".format(snippet))))
+    elif snippet_type == 'author':
+        if (start_date == None) or (end_date == None):
+            s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.author.ilike("%{0}%".format(snippet)))
+        else:
+            s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
+              articles_table.c.date <= end_date, articles_table.c.author.ilike("%{0}%".format(snippet)))) 
     elif snippet_type == 'category_id':
         if (start_date == None) or (end_date == None):
             s = s.select_from(articles_table.join(categories_table)).where(categories_table.c.categoryID == snippet)
@@ -247,77 +259,6 @@ def get_snippet(snippet, snippet_type, start_date=None, end_date=None):
                                               publication=row.publication)
                                                 for row in rp]
     return articles_by_snippet
-    
-def display_articles_by_category_id(start_date, end_date, category_id):
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.date,
-                articles_table.c.categoryID, articles_table.c.link,
-                articles_table.c.description, articles_table.c.publication,
-                articles_table.c.author, categories_table.c.category_name]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(and_(articles_table.c.date >= start_date,
-              articles_table.c.date <= end_date, categories_table.c.categoryID==category_id))
-              #articles_table.c.year == roundup_year, articles_table.c.categoryID == category_id))
-    rp = connection.execute(s)
-    #results = rp.fetchall()
-    
-    articles_by_categoryID = [Article.from_sqlalchemy(articleID=row.articleID, 
-                                              name=row.name, date=row.date, 
-                                              link=row.link,
-                                              description=row.description,
-                                              author=row.author,
-                                              categoryID = row.categoryID,
-                                              category_name = row.category_name,
-                                              publication=row.publication)
-                                                for row in rp]
-    return articles_by_categoryID
-    
-def display_articles_by_publication(publication_snippet):
-    '''
-    This function is intended to display articles based on partial publication
-    titles.
-    '''
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.publication.ilike("%{0}%".format(publication_snippet)))
-    rp = connection.execute(s).fetchall()
-    articles_by_name = []
-    for i in rp:
-        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-                                                  name=i.name, date=i.date, 
-                                                  link=i.link,
-                                                  description=i.description,
-                                                  author=i.author,
-                                                  categoryID = i.categoryID,
-                                                  category_name = i.category_name,
-                                                  publication=i.publication)
-        articles_by_name.append(new_article)
-    return articles_by_name
-
-def display_articles_by_author(author_snippet):
-    '''
-    This function is intended to display articles based on partial publication
-    titles.
-    '''
-    columns = [articles_table.c.articleID, articles_table.c.name, articles_table.c.link, articles_table.c.date,
-              articles_table.c.description, articles_table.c.categoryID, categories_table.c.category_name,
-              articles_table.c.author, articles_table.c.publication]
-    s = select(columns)
-    s = s.select_from(articles_table.join(categories_table)).where(articles_table.c.author.ilike("%{0}%".format(author_snippet)))
-    rp = connection.execute(s).fetchall()
-    articles_by_name = []
-    for i in rp:
-        new_article = Article.from_sqlalchemy(articleID=i.articleID, 
-                                                  name=i.name, date=i.date, 
-                                                  link=i.link,
-                                                  description=i.description,
-                                                  author=i.author,
-                                                  categoryID = i.categoryID,
-                                                  category_name = i.category_name,
-                                                  publication=i.publication)
-        articles_by_name.append(new_article)
-    return articles_by_name
 
 def get_undescribed_article_count(start_date, end_date, description_snippet):
     #def get_date_range_article_count(category_id, start_date, end_date):
@@ -353,7 +294,9 @@ def get_article_count(category_id=None, start_date=None, end_date=None):
 def update_article(article_id, new_value, update_type=None):
     '''
     This function provides update capacity for the different fields of an
-    article object that the user is able to change.
+    article object that the user is able to change. This replaced individual
+    functions for each of the different update types. The ongoing goal with
+    this project is to get the codebase as concise as possible.
     '''
     u = update(articles_table).where(articles_table.c.articleID == article_id)
     if update_type == None:
@@ -370,6 +313,9 @@ def update_article(article_id, new_value, update_type=None):
         u = u.values(categoryID=new_value)
     elif update_type == 'date':
         u = u.values(date=new_value)
+    else:
+        print('Invalid update type')
+        return
     result = connection.execute(u)
     print(result.rowcount)
     

@@ -148,8 +148,9 @@ def display_articles(articles, title_term):
 
 def from_snippet(snippet=None, snippet_type=None, start_date = None,
                  end_date=None):
-    text_snippet_types = ['title', 'description', 'category']
-    numeric_snippet_types = ['category_id']
+    text_snippet_types = {'title', 'description', 'category', 'publication',
+                          'author'}
+    numeric_snippet_types = {'category_id'}
     #range_snippet_types = ['date', 'article_id']
     
     '''
@@ -218,31 +219,6 @@ def display_article_by_id_range(starting_id, ending_id):
     else:
         print()
         display_articles(articles, str('{0} {1}'.format(starting_id, ending_id)))
-    
-        
-def display_articles_by_author(author_snippet=None):
-    if not author_snippet:
-        author_snippet = btc.read_text("Author Name: ")
-    articles = db.display_articles_by_author(author_snippet)
-    if articles == None:
-        print("There are no articles by that author. article NOT found.\n")
-    else:
-        print()
-        display_articles(articles, "AUTHOR: " + str(articles[0].author))
-
-def display_articles_by_publication(publication_snippet=None):
-    if not publication_snippet:
-        publication_snippet = btc.read_text("Publication: ")
-    publications = db.display_articles_by_publication(publication_snippet)
-    if publications == None:
-        print("There are no articles by that publication. article NOT found.\n")
-        return
-    else:
-        print()
-        try:
-            display_articles(publications, "PUBLICATION: " + str(publications[0].publication))
-        except IndexError as e:
-            display_articles(publications, "PUBLICATION: " + str('Error: {0}'.format(e)))
 
 def manual_add(link=None):
     '''
@@ -364,41 +340,63 @@ def update_article_description(article_id):
         else:
             print('Edit cancelled, article description unchanged')
 
-def update_article_author(article_id):
-    article = db.get_article(article_id)
-    if article == None:
-        print("There is no article with that ID. article NOT found.\n")
+def update_article(article_id, update_type):
+    update_types = {'author', 'publication'}
+    if update_type not in update_types:
+        print('Invalid update type')
+        return
     else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article author, 2 to leave as is: ' ,
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            new_author = btc.read_text('Enter new author name or . to cancel: ')
-            if new_author != '.':
-                db.update_article(article_id=article_id, new_value=new_author,
-                                  update_type = 'author')
+        article = db.get_article(article_id)
+        if article == None:
+            print("There is no article with that ID. article NOT found.\n")
         else:
-            print('Edit cancelled, article title unchanged')
+            print()
+            display_single_article(article, str(article.ArticleID))
+            article_choice = btc.read_int_ranged('1 to edit article {0}, 2 to leave as is: '.format(update_type) ,
+                                                 min_value = 1, max_value = 2)
+            if article_choice == 1:
+                new_value = btc.read_text('Enter new {0} or . to cancel: '.format(update_type))
+                if new_value != '.':
+                    db.update_article(article_id=article_id, new_value=new_value,
+                                      update_type = update_type)
+            else:
+                print('Edit cancelled, article title unchanged')
 
-def update_article_publication(article_id):
-    article = db.get_article(article_id)
-    if article == None:
-        print("There is no article with that ID. article NOT found.\n")
-    else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article publication, 2 to leave as is: ' ,
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            new_publication = btc.read_text('Enter new publication name or . to cancel: ')
-            if new_publication != '.':
-                db.update_article(article_id=article_id,
-                                  new_value=new_publication,
-                                  update_type = 'publication')
-                print(article_id, new_publication)
-        else:
-            print('Edit cancelled, article title unchanged')
+#def update_article_author(article_id):
+#    article = db.get_article(article_id)
+#    if article == None:
+#        print("There is no article with that ID. article NOT found.\n")
+#    else:
+#        print()
+#        display_single_article(article, str(article.ArticleID))
+#        article_choice = btc.read_int_ranged('1 to edit article author, 2 to leave as is: ' ,
+#                                             min_value = 1, max_value = 2)
+#        if article_choice == 1:
+#            new_author = btc.read_text('Enter new author name or . to cancel: ')
+#            if new_author != '.':
+#                db.update_article(article_id=article_id, new_value=new_author,
+#                                  update_type = 'author')
+#        else:
+#            print('Edit cancelled, article title unchanged')
+
+#def update_article_publication(article_id):
+#    article = db.get_article(article_id)
+#    if article == None:
+#        print("There is no article with that ID. article NOT found.\n")
+#    else:
+#        print()
+#        display_single_article(article, str(article.ArticleID))
+#        article_choice = btc.read_int_ranged('1 to edit article publication, 2 to leave as is: ' ,
+#                                             min_value = 1, max_value = 2)
+#        if article_choice == 1:
+#            new_publication = btc.read_text('Enter new publication name or . to cancel: ')
+#            if new_publication != '.':
+#                db.update_article(article_id=article_id,
+#                                  new_value=new_publication,
+#                                  update_type = 'publication')
+#                print(article_id, new_publication)
+#        else:
+#            print('Edit cancelled, article title unchanged')
 
 def update_article_date(article_id):
     article = db.get_article(article_id)
@@ -471,24 +469,6 @@ def finalize_article_descriptions(start_date, end_date):
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
         if description_choice == 2:
             print('Update descriptions cancelled')
-            break
-        
-def finalize_title_updates(month, year):
-    articles = db.get_articles_by_month(month=month, year=year)
-    articles_remaining = len(articles)
-    for article in articles:
-        print('{0} articles remaining'.format(articles_remaining))
-        display_single_article(article, title_term = article.ArticleID)
-        strip_choice = btc.read_int_ranged('1 to update title, 2 to skip, 3 to return to main menu: ', 1, 3)
-        if strip_choice == 1:
-            update_article_name(article.ArticleID)
-            articles_remaining -= 1
-        if strip_choice == 2:
-            articles_remaining -= 1
-            print('Article title unchanged.')
-        if strip_choice == 3:
-            print('strip titles cancelled')
-            #display_title()
             break
 
 def get_category_chart(start_date, end_date):
@@ -590,7 +570,7 @@ def create_csv_list(filename):
         return
     print('csv reader created')
     for row in readerObj:
-        if readerObj.line_num == 1:
+        if readerObj.line_num == 1: #skip the first row
             continue
         csvRows.append(row)
     csvFileObj.close()
@@ -643,7 +623,8 @@ def update_category(category_id=0):
     print('Current category name: {0}'.format(category.category_name))
     new_category_name = btc.read_text("Enter new category name or '.' to cancel: ")
     if new_category_name != '.':
-        update_choice = btc.read_bool(decision='Update category name from {0} to {1}?'.format(),
+        update_choice = btc.read_bool(decision='Update category name from {0} to {1}?'.format(category.category_name,
+                                      new_category_name),
                                       yes='1', no='2', yes_option='update', no_option='cancel')
         #update_choice = btc.read_int_ranged("1 to change article name to {0}, 2 to cancel: ".format(new_category_name),
         #                                    1, 2)
@@ -907,18 +888,46 @@ search_id 18 will find the article with ID 18''')
         Enter 'adv_cat_search [id/name] - [start date] [end_date]'
         ''')
         
+        
     def do_search_author(self, command):
-        display_articles_by_author(command)
+        #I think the code block below this will be the initial functionality of what the
+        #new entryParser class does
+        try:
+            snippet, dates = split_command(command, splitter = '-')
+            snippet = snippet.lstrip()
+            snippet = snippet.rstrip()
+            start_date, end_date = parse_dates(dates)
+            from_snippet(snippet=snippet, start_date=start_date,
+                                     end_date=end_date, snippet_type='author')
+        except TypeError as e:
+            print(e)
+        except ValueError as e:
+            print(e)
         
     def help_search_author(self):
-        print('Enter search_author [author_name] to find the author')
+        print('search_publication [publication_title] - [start_date] [end_date]')
+        print('Partial titles are acceptable')
+        print('Dates range must be entered')
         
     def do_search_publication(self, command):
-        display_articles_by_publication(command)
+        #I think the code block below this will be the initial functionality of what the
+        #new entryParser class does
+        try:
+            snippet, dates = split_command(command, splitter = '-')
+            snippet = snippet.lstrip()
+            snippet = snippet.rstrip()
+            start_date, end_date = parse_dates(dates)
+            from_snippet(snippet=snippet, start_date=start_date,
+                                     end_date=end_date, snippet_type='publication')
+        except TypeError as e:
+            print(e)
+        except ValueError as e:
+            print(e)
         
     def help_search_publication(self, command):
-        print('Enter search_publication [publication_title]')
+        print('search_publication [publication_title] - [start_date] [end_date]')
         print('Partial titles are acceptable')
+        print('Dates range must be entered')
         
     def do_search_desc(self, command):
         #I think the code block below this will be the initial functionality of what the
@@ -988,14 +997,16 @@ will return to the main menu.
         print('example: udartcat 13 \t updates the description for article id 13')
         
     def do_udartauth(self, command):
-        update_article_author(article_id=command)
+        #Testing the new update_article function
+        update_article(article_id=command, update_type='author')
         
     def help_udartauth(self):
         print('udartauth [article_id] updates an article\'s author')
         print('Note: this does not affect other articles from the same author')
         
     def do_udartpub(self, command):
-        update_article_publication(article_id=command)
+        #Testing the new update article function
+        update_article(article_id=command, update_type='publication')
         
     def help_udartpub(self):
         print('udartpub [article_id] updates an article\'s publication')
@@ -1046,6 +1057,14 @@ will return to the main menu.
             get_category_chart(start_date, end_date)
         except Exception as e:
             print(e)
+            
+    def help_category_chart(self):
+        print('''
+        category_chart [start_date] [end_date]
+        e.g. category_chart 09/01/2019 09/30/2019
+        Creates a bar chart using matplotlib showing the number of articles
+        in each category in the selected dates.
+        ''')
     
     def do_complete_desc(self, command):
         try:
