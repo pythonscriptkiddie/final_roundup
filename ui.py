@@ -5,7 +5,7 @@
 
 '''
 
-import db
+import db2 as db
 from objects import Article, Category
 import roundup_docx2 as roundup_docx
 import BTCInput2 as btc
@@ -290,28 +290,28 @@ def update_article_name(article_id):
         else:
             print('Edit cancelled, article title unchanged')
             
-def update_article_category(article_id):
-    #Add read_bool to confirm the user's choice
-    article = db.get_article(article_id)
-    if article == None:
-        print("There is no article with that ID. article NOT found.\n")
-    else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article category, 2 to leave as is: ' ,
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            display_categories()
-            new_category_id = btc.read_int('Enter new category_id: ')
-            result = db.cat_from_snippet(new_category_id)
-            #Add in some text that is displayed to make it clear that the category is being updated
-            if result == None:
-                print('There is no category with that ID, article category NOT updated.\n')
-            else:
-                db.update_article(article_id, new_category_id,
-                                  update_type='category_id')
-        else:
-            print('Edit cancelled, article title unchanged')
+#def update_article_category(article_id):
+#    #Add read_bool to confirm the user's choice
+#    article = db.get_article(article_id)
+#    if article == None:
+#        print("There is no article with that ID. article NOT found.\n")
+#    else:
+#        print()
+#        display_single_article(article, str(article.ArticleID))
+#        article_choice = btc.read_int_ranged('1 to edit article category, 2 to leave as is: ' ,
+#                                             min_value = 1, max_value = 2)
+#        if article_choice == 1:
+#            display_categories()
+#            new_category_id = btc.read_int('Enter new category_id: ')
+#            result = db.cat_from_snippet(new_category_id)
+#            #Add in some text that is displayed to make it clear that the category is being updated
+#            if result == None:
+#                print('There is no category with that ID, article category NOT updated.\n')
+#            else:
+#                db.update_article(article_id, new_category_id,
+#                                  update_type='category_id')
+#        else:
+#            print('Edit cancelled, article title unchanged')
             
 def update_article_description(article_id):
     article = db.get_article(article_id)
@@ -367,8 +367,11 @@ def udart_scrape(article_id):
         else:
             print('Edit cancelled, article description unchanged')
 
+#We want as much as possible to unify the update types in the update_article
+#function
+
 def update_article(article_id, update_type):
-    update_types = {'author', 'publication', 'date'}
+    update_types = {'author', 'publication', 'date', 'category_id'}
     if update_type not in update_types:
         print('Invalid update type')
         return
@@ -384,6 +387,14 @@ def update_article(article_id, update_type):
             if article_choice == 1:
                 if update_type == 'date':
                     new_value = btc.read_date('Enter new date or . to cancel: ')
+                elif update_type == 'category_id':
+                    display_categories()
+                    new_value = btc.read_int('Enter new category_id: ')
+                    new_category = db.cat_from_snippet(new_value)
+                    if new_category == None: #Make sure the new category exists
+                        print('There is no category with that ID, article category NOT updated.\n')
+                        return
+                    #If the new category exists, then we go on to update the article
                 else:
                     new_value = btc.read_text('Enter new {0} or . to cancel: '.format(update_type))
                 if new_value != '.':
@@ -1016,7 +1027,8 @@ will return to the main menu.
         
     def do_udartcat(self, command):
         #We pass the article ID to the other function as a command
-        update_article_category(article_id = command)
+        #update_article_category(article_id = command)
+        update_article(article_id=command, update_type='category_id')
         
     def help_udartcat(self):
         print('udartcat [article_id] updates the category of an article')
