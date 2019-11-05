@@ -24,12 +24,6 @@ from dateutil.parser import parse
 '''perhaps create a menu that appears when you choose the edit article option
 then gives you choice of what to edit'''
 
-def from_pool(links):
-    '''
-    Planned multithreaded article download feature.
-    '''
-    pass
-
 def from_newspaper(link):
     '''
     Adds an article from the newspaper module after downloading it
@@ -290,29 +284,6 @@ def update_article_name(article_id):
         else:
             print('Edit cancelled, article title unchanged')
             
-#def update_article_category(article_id):
-#    #Add read_bool to confirm the user's choice
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article category, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            display_categories()
-#            new_category_id = btc.read_int('Enter new category_id: ')
-#            result = db.cat_from_snippet(new_category_id)
-#            #Add in some text that is displayed to make it clear that the category is being updated
-#            if result == None:
-#                print('There is no category with that ID, article category NOT updated.\n')
-#            else:
-#                db.update_article(article_id, new_category_id,
-#                                  update_type='category_id')
-#        else:
-#            print('Edit cancelled, article title unchanged')
-            
 def update_article_description(article_id):
     article = db.get_article(article_id)
     if article == None:
@@ -340,7 +311,10 @@ def update_article_description(article_id):
         else:
             print('Edit cancelled, article description unchanged')
 
-def udart_scrape(article_id):
+#This will replace the update_article_name and update_article description
+#functions to reduce the length of the codebase.
+
+def udart_scrape(article_id, update_tye):
     article = db.get_article(article_id)
     if article == None:
         print("There is no article with that ID. article NOT found.\n")
@@ -405,65 +379,6 @@ def update_article(article_id, update_type):
                     return
             else:
                 print('Edit cancelled, article title unchanged')
-
-#def update_article_author(article_id):
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article author, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            new_author = btc.read_text('Enter new author name or . to cancel: ')
-#            if new_author != '.':
-#                db.update_article(article_id=article_id, new_value=new_author,
-#                                  update_type = 'author')
-#        else:
-#            print('Edit cancelled, article title unchanged')
-
-#def update_article_publication(article_id):
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article publication, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            new_publication = btc.read_text('Enter new publication name or . to cancel: ')
-#            if new_publication != '.':
-#                db.update_article(article_id=article_id,
-#                                  new_value=new_publication,
-#                                  update_type = 'publication')
-#                print(article_id, new_publication)
-#        else:
-#            print('Edit cancelled, article title unchanged')
-
-#def update_article_date(article_id):
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article date, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            new_date = btc.read_date('Enter new date: ')
-#            date_choice = btc.read_int_ranged('1 to change date to: {0}, 2 to cancel: '.format(new_date),
-#                                              min_value=1, max_value=2)
-#            if date_choice == 1:
-#                db.update_article(article_id=article_id,
-#                                       new_value=new_date,
-#                                       update_type='date')
-#                print('Update complete.\n')
-#            elif date_choice == 2:
-#                print('Edit cancelled, article date unchanged')
-#        else:
-#            print('Edit cancelled, article date unchanged')
 
 def scrape_article_name(article_id):
     article = db.get_article(article_id)
