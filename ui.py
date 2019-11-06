@@ -314,30 +314,62 @@ def update_article_description(article_id):
 #This will replace the update_article_name and update_article description
 #functions to reduce the length of the codebase.
 
-def udart_scrape(article_id, update_tye):
+def rescrape(article_id, update_type):
+    #update_types: name and description
     article = db.get_article(article_id)
     if article == None:
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
         display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
+        article_choice = btc.read_int_ranged('1 to edit article {0}, 2 to leave as is: '.format(update_type),
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
-            description_choice = btc.read_text('View article summary? y/n: ')
-            if description_choice == 'y':
-                article_summary = na.get_article_summary(article.link)
-                print(article_summary)
-            new_description = btc.read_text('Enter new description or "." to cancel: ')
-            
-            if new_description != '.':
-                #db.update_article_description(article_id, new_description)
-                db.update_article(article_id=article_id,
-                                  new_value = new_description,
-                                  update_type = 'description')
-                print('Article description updated.\n')
-            else:
-                print('Edit cancelled, article description unchanged')
+            try:
+                newsItem1 = na.get_article_from_url(article.link)
+            except Exception as e:
+                print(e)
+                return
+            if update_type == 'name':
+                    #newsItem1 = na.get_article_from_url(article.link)
+                updated_title = newsItem1.title
+                print('Rescraped title: {0}'.format(updated_title))
+                title_choice = btc.read_int_ranged('1 - existing title, 2 - scraped title, 3 - manual input: ', 1, 3)
+                                    
+                if title_choice == 1:
+                    print('Title update cancelled, article title unchanged.')
+                    return
+                elif title_choice == 2:
+                    db.update_article(article_id=article_id,
+                                      new_value=updated_title,
+                                      update_type = 'name')
+                elif title_choice == 3:
+                    new_title = btc.read_text('Enter new title or . to cancel: ')
+                    if new_title != '.':
+                        #db.update_article_name(article_id, new_title)
+                        db.update_article(article_id=article_id,
+                                      new_value=new_title, #taking the title we just obtained
+                                      update_type = 'name')
+                else:
+                    print('Edit cancelled, return to main menu')
+                    return
+                    print('Title update complete. Return to main menu.')
+                
+            elif update_type == 'description':    
+                description_choice = btc.read_text('View article summary? y/n: ')
+                if description_choice == 'y':
+                    article_summary = newsItem1.summary
+                    #article_summary = na.get_article_summary(article.link)
+                    print(article_summary)
+                    new_description = btc.read_text('Enter new description or "." to cancel: ')
+                if new_description != '.':
+                    #db.update_article_description(article_id, new_description)
+                    db.update_article(article_id=article_id,
+                                      new_value = new_description,
+                                      update_type = 'description')
+                    print('Article description updated.\n')
+                else:
+                    print('Edit cancelled, article description unchanged')
         else:
             print('Edit cancelled, article description unchanged')
 
@@ -888,6 +920,7 @@ search_id 18 will find the article with ID 18''')
         print('search_publication [publication_title] - [start_date] [end_date]')
         print('Partial titles are acceptable')
         print('Dates range must be entered')
+    
         
     def do_search_desc(self, command):
         #I think the code block below this will be the initial functionality of what the

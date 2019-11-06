@@ -56,39 +56,11 @@ dal = DataAccessLayer()
 
 def connect():
     global dal
-    #dal = DataAccessLayer()
     dal.db_init('sqlite:///sub_saharan_roundup2.db')
-#    global dal.connection,dal.articles_table,dal.categories_table
-#    if not dal.connection:
-#        engine = create_engine("sqlite:///sub_saharan_roundup.db")
-#        metadata = MetaData()
-#       dal.articles_table = Table('Articles', metadata,
-#                Column('articleID', Integer(), primary_key=True, index=True),
-#                Column('name', String(200), default=None),
-#                Column('author', String(100), default=None),
-#                Column('publication', String(100), default=None),
-#                Column('link', String(200), default=None),
-#                Column('description', String(500), default=None),
-#                Column('date', Date(), default=None),
-#                Column('categoryID', ForeignKey('Categories.categoryID'))
-#                )
-#       dal.categories_table = Table('Categories', metadata,
-#                Column('categoryID', Integer(), primary_key=True),
-#                Column('category_name', String(50), default=None)
-#                )
-#        metadata.create_all(engine)
-#        dal.connection = engine.connect()
 
 def close():
     if dal.connection:
         dal.close()
-        #print('database dal.connection closed successfully')
-
-def make_category(row):
-    '''
-    This function takes a row from the database and makes a category.
-    '''
-    return Category(row[0], row[1])
 
 #CREATE section - create articles and categories
 
