@@ -244,72 +244,72 @@ def manual_add(link=None):
 
 
 
-def update_article_name(article_id):
-    article = db.get_article(article_id)
-    if article == None:
-        print("There is no article with that ID. article NOT found.\n")
-    else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article title, 2 to leave as is: ' ,
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            try:
-                newsItem1 = na.get_article_from_url(article.link)
-                updated_title = newsItem1.title
-            except Exception as e:
-                print('Scrape failed because of {0}'.format(e))
-                updated_title = 'Invalid'
-            print('Rescraped title: {0}'.format(updated_title))
-            title_choice = btc.read_int_ranged('1 - existing title, 2 - scraped title, 3 - manual input: ', 1, 3)
-                                
-            if title_choice == 1:
-                print('Title update cancelled, article title unchanged.')
-                return
-            elif title_choice == 2:
-                db.update_article(article_id=article_id,
-                                  new_value=updated_title,
-                                  update_type = 'name')
-                print('Title update complete. Return to main menu.')
-            elif title_choice == 3:
-                new_title = btc.read_text('Enter new title or . to cancel: ')
-                if new_title != '.':
-                    #db.update_article_name(article_id, new_title)
-                    db.update_article(article_id=article_id,
-                                  new_value=new_title, #taking the title we just obtained
-                                  update_type = 'name')
-                else:
-                    print('Edit cancelled, return to main menu')
-                    return
-        else:
-            print('Edit cancelled, article title unchanged')
-            
-def update_article_description(article_id):
-    article = db.get_article(article_id)
-    if article == None:
-        print("There is no article with that ID. article NOT found.\n")
-    else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            description_choice = btc.read_text('View article summary? y/n: ')
-            if description_choice == 'y':
-                article_summary = na.get_article_summary(article.link)
-                print(article_summary)
-            new_description = btc.read_text('Enter new description or "." to cancel: ')
-            
-            if new_description != '.':
-                #db.update_article_description(article_id, new_description)
-                db.update_article(article_id=article_id,
-                                  new_value = new_description,
-                                  update_type = 'description')
-                print('Article description updated.\n')
-            else:
-                print('Edit cancelled, article description unchanged')
-        else:
-            print('Edit cancelled, article description unchanged')
+#def update_article_name(article_id):
+#    article = db.get_article(article_id)
+#    if article == None:
+#        print("There is no article with that ID. article NOT found.\n")
+#    else:
+#        print()
+#        display_single_article(article, str(article.ArticleID))
+#        article_choice = btc.read_int_ranged('1 to edit article title, 2 to leave as is: ' ,
+#                                             min_value = 1, max_value = 2)
+#        if article_choice == 1:
+#            try:
+#                newsItem1 = na.get_article_from_url(article.link)
+#                updated_title = newsItem1.title
+#            except Exception as e:
+#                print('Scrape failed because of {0}'.format(e))
+#                updated_title = 'Invalid'
+#            print('Rescraped title: {0}'.format(updated_title))
+#            title_choice = btc.read_int_ranged('1 - existing title, 2 - scraped title, 3 - manual input: ', 1, 3)
+#                                
+#            if title_choice == 1:
+#                print('Title update cancelled, article title unchanged.')
+#                return
+#            elif title_choice == 2:
+#                db.update_article(article_id=article_id,
+#                                  new_value=updated_title,
+#                                  update_type = 'name')
+#                print('Title update complete. Return to main menu.')
+#            elif title_choice == 3:
+#                new_title = btc.read_text('Enter new title or . to cancel: ')
+#                if new_title != '.':
+#                    #db.update_article_name(article_id, new_title)
+#                    db.update_article(article_id=article_id,
+#                                  new_value=new_title, #taking the title we just obtained
+#                                  update_type = 'name')
+#                else:
+#                    print('Edit cancelled, return to main menu')
+#                    return
+#        else:
+#            print('Edit cancelled, article title unchanged')
+#            
+#def update_article_description(article_id):
+#    article = db.get_article(article_id)
+#    if article == None:
+#        print("There is no article with that ID. article NOT found.\n")
+#    else:
+#        print()
+#        display_single_article(article, str(article.ArticleID))
+#        article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
+#                                             min_value = 1, max_value = 2)
+#        if article_choice == 1:
+#            description_choice = btc.read_text('View article summary? y/n: ')
+#            if description_choice == 'y':
+#                article_summary = na.get_article_summary(article.link)
+#                print(article_summary)
+#            new_description = btc.read_text('Enter new description or "." to cancel: ')
+#            
+#            if new_description != '.':
+#                #db.update_article_description(article_id, new_description)
+#                db.update_article(article_id=article_id,
+#                                  new_value = new_description,
+#                                  update_type = 'description')
+#                print('Article description updated.\n')
+#            else:
+#                print('Edit cancelled, article description unchanged')
+#        else:
+#            print('Edit cancelled, article description unchanged')
 
 #This will replace the update_article_name and update_article description
 #functions to reduce the length of the codebase.
@@ -329,11 +329,14 @@ def rescrape(article_id, update_type):
                 newsItem1 = na.get_article_from_url(article.link)
             except Exception as e:
                 print(e)
-                return
             if update_type == 'name':
                     #newsItem1 = na.get_article_from_url(article.link)
-                updated_title = newsItem1.title
-                print('Rescraped title: {0}'.format(updated_title))
+                try:
+                    updated_title = newsItem1.title
+                    print('Rescraped title: {0}'.format(updated_title))
+                except Exception as e:
+                    print(e)
+                    updated_title = 'Invalid'
                 title_choice = btc.read_int_ranged('1 - existing title, 2 - scraped title, 3 - manual input: ', 1, 3)
                                     
                 if title_choice == 1:
@@ -358,18 +361,22 @@ def rescrape(article_id, update_type):
             elif update_type == 'description':    
                 description_choice = btc.read_text('View article summary? y/n: ')
                 if description_choice == 'y':
-                    article_summary = newsItem1.summary
+                    try:
+                        article_summary = newsItem1.summary
+                    except Exception as e:
+                        print(e)
+                        article_summary  = 'Not found'
                     #article_summary = na.get_article_summary(article.link)
                     print(article_summary)
                     new_description = btc.read_text('Enter new description or "." to cancel: ')
-                if new_description != '.':
-                    #db.update_article_description(article_id, new_description)
-                    db.update_article(article_id=article_id,
-                                      new_value = new_description,
-                                      update_type = 'description')
-                    print('Article description updated.\n')
-                else:
-                    print('Edit cancelled, article description unchanged')
+                    if new_description != '.':
+                        #db.update_article_description(article_id, new_description)
+                        db.update_article(article_id=article_id,
+                                          new_value = new_description,
+                                          update_type = 'description')
+                        print('Article description updated.\n')
+                    else:
+                        print('Edit cancelled, article description unchanged')
         else:
             print('Edit cancelled, article description unchanged')
 
@@ -411,35 +418,6 @@ def update_article(article_id, update_type):
                     return
             else:
                 print('Edit cancelled, article title unchanged')
-
-def scrape_article_name(article_id):
-    article = db.get_article(article_id)
-    if article == None:
-        print('There is no article with that ID. article NOT found.\n')
-    else:
-        print()
-        display_single_article(article, str(article.ArticleID))
-        article_choice = btc.read_int_ranged('1 to rescrape title, 2 to leave as is: ',
-                                             min_value = 1, max_value = 2)
-        if article_choice == 1:
-            try:
-                new_article_news_item = na.get_article_from_url(article.link)
-                new_title = new_article_news_item.title
-                print('''
-New title: {0}
-Old title: {1}'''.format(new_title, article.name))
-            except:
-                new_title = 'Title scrape failed'
-            title_choice = btc.read_int_ranged('1 to replace title, 2 to keep original title: ',
-                                               min_value = 1, max_value = 2)
-            if title_choice == 1:
-                db.update_article(article_id=article_id, new_value=new_title,
-                                  update_type = 'name')
-            elif title_choice == 2:
-                print('article update cancelled')
-                
-        elif article_choice == 2:
-            print('article update cancelled')
     
 def finalize_article_descriptions(start_date, end_date):
     undescribed = db.get_snippet(snippet='Not specified',
@@ -455,7 +433,8 @@ def finalize_article_descriptions(start_date, end_date):
     print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
         print('Undescribed articles remaining: {0}'.format(undescribed_articles))
-        update_article_description(article.ArticleID)
+        #update_article_description(article.ArticleID)
+        rescrape(article_id = article.ArticleID, update_type = 'description')
         undescribed_articles -= 1
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
         if description_choice == 2:
@@ -968,7 +947,8 @@ will return to the main menu.
 ''')
     
     def do_udname(self, command):
-        update_article_name(article_id = command)
+        #update_article_name(article_id = command)
+        rescrape(article_id = command, update_type='name')
     
     def help_udname(self):
         print('udname [article_id] updates the name of an article')
@@ -984,7 +964,8 @@ will return to the main menu.
         print('example: udartcat 12 \tupdates the category for article id 12')
         
     def do_udartdesc(self, command):
-        update_article_description(article_id=command)
+        #update_article_description(article_id=command)
+        rescrape(article_id = command, update_type='description')
         
     def help_udartdesc(self):
         print('udartdesc [article_id] updates the description of an article')
