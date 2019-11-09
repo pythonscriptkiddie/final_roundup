@@ -316,6 +316,7 @@ def manual_add(link=None):
 
 def rescrape(article_id, update_type):
     #update_types: name and description
+    #We need to shorten this function, or replace it with a class
     article = db.get_article(article_id)
     if article == None:
         print("There is no article with that ID. article NOT found.\n")
@@ -881,8 +882,6 @@ search_id 18 will find the article with ID 18''')
         print('Dates range must be entered')
         
     def do_search_publication(self, command):
-        #I think the code block below this will be the initial functionality of what the
-        #new entryParser class does
         try:
             snippet, dates = split_command(command, splitter = '-')
             snippet = snippet.lstrip()
@@ -902,8 +901,6 @@ search_id 18 will find the article with ID 18''')
     
         
     def do_search_desc(self, command):
-        #I think the code block below this will be the initial functionality of what the
-        #new entryParser class does
         try:
             snippet, dates = split_command(command, splitter = '-')
             snippet = snippet.lstrip()
@@ -956,7 +953,6 @@ will return to the main menu.
         
     def do_udartcat(self, command):
         #We pass the article ID to the other function as a command
-        #update_article_category(article_id = command)
         update_article(article_id=command, update_type='category_id')
         
     def help_udartcat(self):
@@ -964,7 +960,6 @@ will return to the main menu.
         print('example: udartcat 12 \tupdates the category for article id 12')
         
     def do_udartdesc(self, command):
-        #update_article_description(article_id=command)
         rescrape(article_id = command, update_type='description')
         
     def help_udartdesc(self):
@@ -989,7 +984,6 @@ will return to the main menu.
 
     def do_udartdate(self, command):
         update_article(article_id = command, update_type = 'date')
-        #update_article_date(article_id = command)
         
     def help_udartdate(self):
         print('udartdate [article_id] updates the date of an article')
