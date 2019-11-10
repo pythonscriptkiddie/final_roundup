@@ -240,76 +240,6 @@ def manual_add(link=None):
     else:
         print('Add article cancelled. Return to main menu.')
         return
-    #Article.manual_add(link)
-
-
-
-#def update_article_name(article_id):
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article title, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            try:
-#                newsItem1 = na.get_article_from_url(article.link)
-#                updated_title = newsItem1.title
-#            except Exception as e:
-#                print('Scrape failed because of {0}'.format(e))
-#                updated_title = 'Invalid'
-#            print('Rescraped title: {0}'.format(updated_title))
-#            title_choice = btc.read_int_ranged('1 - existing title, 2 - scraped title, 3 - manual input: ', 1, 3)
-#                                
-#            if title_choice == 1:
-#                print('Title update cancelled, article title unchanged.')
-#                return
-#            elif title_choice == 2:
-#                db.update_article(article_id=article_id,
-#                                  new_value=updated_title,
-#                                  update_type = 'name')
-#                print('Title update complete. Return to main menu.')
-#            elif title_choice == 3:
-#                new_title = btc.read_text('Enter new title or . to cancel: ')
-#                if new_title != '.':
-#                    #db.update_article_name(article_id, new_title)
-#                    db.update_article(article_id=article_id,
-#                                  new_value=new_title, #taking the title we just obtained
-#                                  update_type = 'name')
-#                else:
-#                    print('Edit cancelled, return to main menu')
-#                    return
-#        else:
-#            print('Edit cancelled, article title unchanged')
-#            
-#def update_article_description(article_id):
-#    article = db.get_article(article_id)
-#    if article == None:
-#        print("There is no article with that ID. article NOT found.\n")
-#    else:
-#        print()
-#        display_single_article(article, str(article.ArticleID))
-#        article_choice = btc.read_int_ranged('1 to edit article description, 2 to leave as is: ' ,
-#                                             min_value = 1, max_value = 2)
-#        if article_choice == 1:
-#            description_choice = btc.read_text('View article summary? y/n: ')
-#            if description_choice == 'y':
-#                article_summary = na.get_article_summary(article.link)
-#                print(article_summary)
-#            new_description = btc.read_text('Enter new description or "." to cancel: ')
-#            
-#            if new_description != '.':
-#                #db.update_article_description(article_id, new_description)
-#                db.update_article(article_id=article_id,
-#                                  new_value = new_description,
-#                                  update_type = 'description')
-#                print('Article description updated.\n')
-#            else:
-#                print('Edit cancelled, article description unchanged')
-#        else:
-#            print('Edit cancelled, article description unchanged')
 
 #This will replace the update_article_name and update_article description
 #functions to reduce the length of the codebase.
@@ -331,7 +261,6 @@ def rescrape(article_id, update_type):
             except Exception as e:
                 print(e)
             if update_type == 'name':
-                    #newsItem1 = na.get_article_from_url(article.link)
                 try:
                     updated_title = newsItem1.title
                     print('Rescraped title: {0}'.format(updated_title))
@@ -344,21 +273,12 @@ def rescrape(article_id, update_type):
                     print('Title update cancelled, article title unchanged.')
                     return
                 elif title_choice == 2:
-                    db.update_article(article_id=article_id,
-                                      new_value=updated_title,
-                                      update_type = 'name')
+                    new_value = updated_title
                 elif title_choice == 3:
-                    new_title = btc.read_text('Enter new title or . to cancel: ')
-                    if new_title != '.':
-                        #db.update_article_name(article_id, new_title)
-                        db.update_article(article_id=article_id,
-                                      new_value=new_title, #taking the title we just obtained
-                                      update_type = 'name')
-                else:
-                    print('Edit cancelled, return to main menu')
-                    return
-                    print('Title update complete. Return to main menu.')
-                
+                    new_value = btc.read_text('Enter new title or . to cancel: ')
+                    if new_value == '.':
+                        print('Edit cancelled, return to main menu')
+                        return
             elif update_type == 'description':    
                 description_choice = btc.read_text('View article summary? y/n: ')
                 if description_choice == 'y':
@@ -367,19 +287,19 @@ def rescrape(article_id, update_type):
                     except Exception as e:
                         print(e)
                         article_summary  = 'Not found'
-                    #article_summary = na.get_article_summary(article.link)
                     print(article_summary)
-                    new_description = btc.read_text('Enter new description or "." to cancel: ')
-                    if new_description != '.':
-                        #db.update_article_description(article_id, new_description)
-                        db.update_article(article_id=article_id,
-                                          new_value = new_description,
-                                          update_type = 'description')
-                        print('Article description updated.\n')
-                    else:
-                        print('Edit cancelled, article description unchanged')
+                    new_value = btc.read_text('Enter new description or "." to cancel: ')
+                    if new_value == '.':
+                        print('Description update cancelled, return to main menu')
+                        return
+            db.update_article(article_id=article_id,
+                              new_value = new_value,
+                              update_type = update_type)
+            print('Article {0} updated.\n'.format(update_type))
         else:
             print('Edit cancelled, article description unchanged')
+
+
 
 #We want as much as possible to unify the update types in the update_article
 #function
@@ -434,7 +354,6 @@ def finalize_article_descriptions(start_date, end_date):
     print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
         print('Undescribed articles remaining: {0}'.format(undescribed_articles))
-        #update_article_description(article.ArticleID)
         rescrape(article_id = article.ArticleID, update_type = 'description')
         undescribed_articles -= 1
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
@@ -508,12 +427,10 @@ def get_csv_in_directory():
     print('Files available: ')
     for item in file_list:
         print(item, end='\n')
-    #try:
     importing_file_name = btc.read_text('Enter filename from the list or ". " to cancel: ')
     if importing_file_name != '.':
         filename='{0}.csv'.format(importing_file_name)
         csv_articles = create_csv_list(filename)
-        #print(csv_articles)
         no_articles_found = len(csv_articles)
         print('{0} articles to be imported:'.format(no_articles_found))
         try:
@@ -597,8 +514,6 @@ def update_category(category_id=0):
         update_choice = btc.read_bool(decision='Update category name from {0} to {1}?'.format(category.category_name,
                                       new_category_name),
                                       yes='1', no='2', yes_option='update', no_option='cancel')
-        #update_choice = btc.read_int_ranged("1 to change article name to {0}, 2 to cancel: ".format(new_category_name),
-        #                                    1, 2)
         if update_choice == True:
             db.update_category(category_id, new_category_name)
             print('Category update complete\n')
@@ -632,14 +547,11 @@ def export_roundup_by_date():
         roundup_categories = db.get_categories() #We get the articles by
         #category to sort them by category
         for category in roundup_categories:
-            #category.articles = db.get_articles_for_roundup(roundup_month, roundup_year, category.id)
             category.articles = db.get_articles_for_roundup(start_date, end_date, category.CategoryID)
             print(len(category.articles))
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
-        #display_title()
     elif roundup_choice == 2:
         print('Roundup export cancelled. Return to main menu.\n')
-        #display_title()
         
 def export_roundup_by_category():
     display_categories()
@@ -674,7 +586,6 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
         category = btc.read_text("Enter category name or number here:  ")
     if not start_date:
         start_date = btc.read_date("Enter starting date: ")
-        #start_date = parse(start_date)
     if not end_date:
         end_date = btc.read_date("Enter ending date: ")
     if category.isalpha() == True:
@@ -684,8 +595,6 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
     elif category.isnumeric() == True:
         from_snippet(snippet=category, start_date=start_date,
                      end_date=end_date, snippet_type='category_id')    
-        #except:
-            #print('Article search cancelled. Return to main menu.\n')
 
 def category_interface(command):
     category_commands = {'add': add_category,
@@ -724,8 +633,6 @@ def get_stats(start_date=None, end_date=None):
     if not end_date:
         end_date = btc.read_text('Enter end date: ')
     try:
-        #start_date = parse(start_date)
-        #end_date = parse(end_date)
         get_date_range_category_stats(start_date, end_date)
     except Exception as e:
         print(e)

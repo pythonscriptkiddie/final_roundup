@@ -1,14 +1,7 @@
-#from bs4 import BeautifulSoup
-#import re
-#import requests
 import datetime
 from typing import Any
 from dataclasses import dataclass
-#from dateutil.parser import parse
 import news_article as na
-#import db
-#import tqdm
-#from test_dal2 import dal
 import BTCInput2 as btc
 
 @dataclass
@@ -30,9 +23,6 @@ class Article:
     @property
     def date_string(self):
         return self.date.strftime("%m/%d/%Y")
-        #return self.date
-        #template = '{0}/{1}/{2}'
-        #return template.format(str(self.month), str(self.day).zfill(2), str(self.year))
     
     @staticmethod
     def get_date_formatted(article):
@@ -62,20 +52,11 @@ class Article:
             if not link:
                 print('No link supplied, manual_add must be followed by link')
                 return
-                #link=read_text('Article url:' )
             name = btc.read_text('Article title: ')
             new_date = btc.read_date('Article date: ')
-            #new_date = read_text('Article date: ')
-            #new_date = parse(new_date)
-            #assert Article.validate_date(day=day,month=month,year=year) == True
             author = btc.read_text('Author: ')
             publication = btc.read_text('Publication: ')
             category = category
-            #category = category
-            #if category == None:
-            #    print('There is no category with that ID. article NOT added.\n')
-            #    return
-            #else:
             description = btc.read_text('Description: ')
             return cls(link=link, name=name, date=new_date,
                            author=author, publication=publication,
@@ -96,9 +77,6 @@ class Article:
         else:
             print('Manual article creation/n')
             print('Link: {0}'.format(link))
-            #Category.display_categories()
-            #new_article_category = btc.read_int('Enter category for article: ')
-            #category = db.get_category(new_article_category)
             assert category != None
             new_article = Article.from_input(link=link, category=category)
             if new_article == None:
@@ -177,23 +155,3 @@ class View:
     Shows the data about an article on the screen
     '''
     pass
-    
-#    @staticmethod
-#    def display_categories(command=''):
-#        del command
-#        print("CATEGORIES")
-#        categories = db.get_categories()  
-#        for category in categories:
-#            print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
-#        print()
-
-#    @staticmethod
-#    def manual_add():
-#        '''
-#        Obtains a new Category object from the Category.from_input() method and
-#        adds it to the database.
-#        '''
-#        new_category = Category.from_input()
-#        if new_category.category_name != '.':
-#            db.add_category(new_category)        
-#            print('New category created: {0}'.format(new_category.name))
