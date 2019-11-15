@@ -1,12 +1,18 @@
 #!/usr/bin/env/python3
 
 '''
-5/22/19 - Get article titles using BeautifulSoup
+11/14/19 - TO DO: Complete section features, including retrieval of categories
+by sections for the roundup, and the formatting of the roundup.
+
+Completed so far:
+    
+Created class Section
+added commands to create, update, and delete sections in the database
 
 '''
 
 import db2 as db
-from objects import Article, Category
+from objects import Article, Category, Section
 import roundup_docx2 as roundup_docx
 import BTCInput2 as btc
 import operator
@@ -16,7 +22,6 @@ import cmd
 import sys
 import news_article as na
 import datetime
-import tqdm
 from matplotlib import pyplot as plt
 from dateutil.parser import parse
 
@@ -28,13 +33,12 @@ def from_newspaper(link):
     '''
     Adds an article from the newspaper module after downloading it
     '''
-    for i in tqdm.tqdm(range(1)):
-        try:
-            newNewsItem = na.get_article_from_url(link)
-        except:
-            print('Article download failed, invalid URL')
-            print('Returning to main menu')
-            return
+    try:
+        newNewsItem = na.get_article_from_url(link)
+    except:
+        print('Article download failed, invalid URL')
+        print('Returning to main menu')
+        return
     print(newNewsItem)
     try:
         name = newNewsItem.title #get the title for the article
@@ -106,7 +110,7 @@ def from_newspaper(link):
         confirm_article = btc.read_bool(decision="Finalize the article?",
                                         yes='y', no='n',yes_option='Confirm',
                                         no_option='Cancel')
-        #This is the user's last chance to decide if they want to add the article
+        #The user's last chance to decide if they want to add the article
         if confirm_article == True:
             db.add_article(new_article)    
             print(new_article.name + " was added to database.\n")
@@ -135,7 +139,7 @@ def display_articles(articles, title_term):
     print(line_format.format("ID", "Name", "Category", 'Date', "Description","Link"))
     print("-" * 155)
     for article in articles:
-        print(line_format.format(str(article.ArticleID), article.name.lstrip()[:50],
+        print(line_format.format(str(article.articleID), article.name.lstrip()[:50],
                                  article.category.category_name[:10], article.date_string,
                                  article.description[:35], article.link[:35]))                          
     print()
@@ -145,7 +149,6 @@ def from_snippet(snippet=None, snippet_type=None, start_date = None,
     text_snippet_types = {'title', 'description', 'category', 'publication',
                           'author'}
     numeric_snippet_types = {'category_id'}
-    #range_snippet_types = ['date', 'article_id']
     
     '''
     This function takes a snippet, as well as the snippet type, and retrieves
@@ -197,7 +200,7 @@ def display_article_by_id(article_id=None):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.ArticleID))
+        display_single_article(article, str(article.articleID))
         
 def display_article_by_id_range(starting_id, ending_id):
     try:
@@ -252,7 +255,7 @@ def rescrape(article_id, update_type):
         print("There is no article with that ID. article NOT found.\n")
     else:
         print()
-        display_single_article(article, str(article.ArticleID))
+        display_single_article(article, str(article.articleID))
         article_choice = btc.read_int_ranged('1 to edit article {0}, 2 to leave as is: '.format(update_type),
                                              min_value = 1, max_value = 2)
         if article_choice == 1:
@@ -315,7 +318,7 @@ def update_article(article_id, update_type):
             print("There is no article with that ID. article NOT found.\n")
         else:
             print()
-            display_single_article(article, str(article.ArticleID))
+            display_single_article(article, str(article.articleID))
             article_choice = btc.read_int_ranged('1 to edit article {0}, 2 to leave as is: '.format(update_type) ,
                                                  min_value = 1, max_value = 2)
             if article_choice == 1:
@@ -354,7 +357,7 @@ def finalize_article_descriptions(start_date, end_date):
     print('Total undescribed articles: {0}'.format(undescribed_articles))
     for article in undescribed:
         print('Undescribed articles remaining: {0}'.format(undescribed_articles))
-        rescrape(article_id = article.ArticleID, update_type = 'description')
+        rescrape(article_id = article.articleID, update_type = 'description')
         undescribed_articles -= 1
         description_choice = btc.read_int_ranged('{0} descriptions remaining. Press 1 to continue, 2 to cancel: '.format(undescribed_articles), 1, 2)
         if description_choice == 2:
@@ -364,12 +367,12 @@ def finalize_article_descriptions(start_date, end_date):
 def get_category_chart(start_date, end_date):
     #get the data from the database
     #calculate how many of the articles have been described
-    categories = db.get_categories()
+    #categories = db.get_categories()
     categories = db.get_categories()
     start_date_pretty = start_date.strftime("%m/%d/%Y")
     end_date_pretty = end_date.strftime("%m/%d/%Y")
     category_info = [[category.category_name,
-                     db.get_article_count(category_id=category.CategoryID,
+                     db.get_article_count(category_id=category.categoryID,
                                                   start_date=start_date,
                                                   end_date=end_date)] for category in categories]
     category_names = [i[0] for i in category_info]
@@ -394,8 +397,8 @@ def get_date_range_category_stats(start_date, end_date):
     categories = db.get_categories()
     total_articles = db.get_article_count(start_date=start_date,
                                                        end_date=end_date)
-    category_ids = [[category.CategoryID, category.category_name,
-                     db.get_article_count(category_id=category.CategoryID,
+    category_ids = [[category.categoryID, category.category_name,
+                     db.get_article_count(category_id=category.categoryID,
                                                   start_date=start_date,
                                                   end_date=end_date)] for category in categories]
     category_ids = sorted(category_ids, key=operator.itemgetter(2), reverse=True)
@@ -471,7 +474,7 @@ def csv_item_to_article(csv_list_item):
     new_article_title = new_article_news_item.title
     print(new_article_title)
     new_article_category = db.cat_from_snippet(csv_list_item[1], numeric_snippet=False)
-    new_article_category = new_article_category.CategoryID
+    new_article_category = new_article_category.categoryID
     new_article_datetime = parse(csv_list_item[2])
     new_article_date = new_article_datetime.date()
 
@@ -502,20 +505,67 @@ def add_category():
         print('New category created: {0}'.format(new_category.name))
     else:
         print('Invalid name, new category not created.')
+        
+def add_section():
+    '''
+    Adds a new SECTION to the roundup. A SECTION is a group of categories, 
+    such as the Arab League countries in Africa.
+    '''
+    new_section = Section.from_input()
+    if new_section.section_name != '.':
+        db.add_section(new_section)        
+        print('New section created: {0}'.format(new_section.section_name))
+    else:
+        print('Invalid name, new category not created.')
+    
 
         
 def update_category(category_id=0):
     if category_id == 0:
         category_id = int(input("category ID: "))
     category = db.cat_from_snippet(category_id, numeric_snippet=True)
-    print('Current category name: {0}'.format(category.category_name))
+    try:
+        print('Current category name: {0}'.format(category.category_name))
+    except AttributeError:
+        print('Category not found. Return to main menu')
+        return
     new_category_name = btc.read_text("Enter new category name or '.' to cancel: ")
     if new_category_name != '.':
         update_choice = btc.read_bool(decision='Update category name from {0} to {1}?'.format(category.category_name,
                                       new_category_name),
                                       yes='1', no='2', yes_option='update', no_option='cancel')
         if update_choice == True:
-            db.update_category(category_id, new_category_name)
+            db.update_category2(category_id=category_id,
+                               new_value=new_category_name,
+                               update_type ='name')
+            print('Category update complete\n')
+        elif update_choice == False:
+            print('Update cancelled.\n')
+            
+def update_category_section(category_id=0):
+    if category_id == 0:
+        category_id = int(input("category ID: "))
+    category = db.cat_from_snippet(category_id, numeric_snippet=True)
+    try:
+        print('Current category name: {0}'.format(category.category_name))
+        print('Current section name: {0}'.format(category.section_name))
+    except Exception as e:
+        print(e)
+        category.sectionID = 1
+        #setattr(category.section_id, 'section_id', None)
+    #except AttributeError:
+    #    print('Category not found. Return to main menu')
+    #    return
+    display_sections()
+    new_category_section = btc.read_int("Enter new section id or '.' to cancel: ")
+    if new_category_section != '.':
+        update_choice = btc.read_bool(decision='Update category section from {0} to {1}?'.format(category.sectionID,
+                                      new_category_section),
+                                      yes='1', no='2', yes_option='update', no_option='cancel')
+        if update_choice == True:
+            db.update_category2(category_id=category_id,
+                               new_value=new_category_section,
+                               update_type ='section')
             print('Category update complete\n')
         elif update_choice == False:
             print('Update cancelled.\n')
@@ -534,6 +584,20 @@ def delete_category():
             db.delete_item(item_id=category_id, item_type='category')
         else:
             print('Delete cancelled, returning to category menu')
+
+def delete_section(command):
+    del command
+    section_id = int(input("section ID: "))
+    categories_in_section = db.get_section_categories(section_id=section_id)
+    if categories_in_section > 0:
+        print('Category contains articles, cannot be deleted')
+    elif categories_in_section == 0:
+        delete_choice = btc.read_bool(decision='Are you sure?',
+                                      yes='1', no='2', yes_option='delete', no_option='cancel')
+        if delete_choice == True:
+            db.delete_item(item_id=section_id, item_type='section')
+        else:
+            print('Delete cancelled, returning to category menu')
         
 def export_roundup_by_date():
     roundup_title = btc.read_text('Enter the roundup title: ')
@@ -547,7 +611,7 @@ def export_roundup_by_date():
         roundup_categories = db.get_categories() #We get the articles by
         #category to sort them by category
         for category in roundup_categories:
-            category.articles = db.get_articles_for_roundup(start_date, end_date, category.CategoryID)
+            category.articles = db.get_articles_for_roundup(start_date, end_date, category.categoryID)
             print(len(category.articles))
         roundup_docx.create_complete_roundup(filename=filename, roundup_title=roundup_title, categories=roundup_categories)
     elif roundup_choice == 2:
@@ -599,6 +663,7 @@ def get_articles_by_category(category=None, start_date=None, end_date=None):
 def category_interface(command):
     category_commands = {'add': add_category,
                        'update': update_category,
+                       'section': update_category_section,
                        'display': display_categories,
                        'delete' : delete_category,
                        'stats': get_articles_by_category,
@@ -643,7 +708,15 @@ def display_categories(command=''):
         print("CATEGORIES")
         categories = db.get_categories()  
         for category in categories:
-            print(str(category.CategoryID) + ". " + category.category_name.strip(), end='   ')
+            print(str(category.categoryID) + ". " + category.category_name.strip(), end='   ')
+        print()
+        
+def display_sections(command=''):
+        del command
+        print("SECTIONS")
+        sections = db.get_sections()  
+        for section in sections:
+            print(str(section.sectionID) + ". " + section.section_name.strip(), end='   ')
         print()
     
 def split_command(command, splitter = ' '):
@@ -914,6 +987,10 @@ will return to the main menu.
         print('categories display - display categories')
         print('categories delete - delete category')
         print('')
+    
+    def do_add_section(self, command):
+        del command
+        add_section()
         
     def do_stats(self, command):
         try:
@@ -954,6 +1031,12 @@ will return to the main menu.
     def help_complete_desc(self):
         print('finalize [start_date], [end_date]')
         print('finalize 09/01/2019 09/30/2019 : finalizes the September 2019 articles')
+        
+    def do_display_sections(self, command):
+        display_sections(command)
+        
+    def do_delete_section(self, command):
+        delete_section(command)
         
     def do_export(self, command):
         export_interface(command)

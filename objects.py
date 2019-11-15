@@ -2,11 +2,12 @@ import datetime
 from typing import Any
 from dataclasses import dataclass
 import news_article as na
+from typing import List
 import BTCInput2 as btc
 
 @dataclass
 class Article:
-    ArticleID: int = id
+    articleID: int = id
     name: str = None
     category: Any = None
     link: str = None
@@ -39,7 +40,7 @@ class Article:
         names are the row names from the sqlalchemy database. These vary slightly
         from the attributes of the article object.
         """
-        return cls(ArticleID=articleID, name=name, date=date,
+        return cls(articleID=articleID, name=name, date=date,
                    category=Category(categoryID, category_name), link=link,
                    description=description, publication=publication, author=author)
         
@@ -117,9 +118,37 @@ class Article:
         return Article.article_months[self.month]
 
 @dataclass
+class Section:
+    sectionID: int = id
+    section_name: str = None
+    categories: List = None
+
+    @classmethod    
+    def from_input(cls):
+        try:
+            print('Manual section creation')
+            print('Press "." to cancel')
+            name = btc.read_text('Section name: ')
+            return cls(section_name=name)
+        except Exception as e:
+            print(e)
+            return
+        except KeyboardInterrupt:
+            print('Ctrl+C pressed, add category cancelled')
+            
+    @classmethod
+    def from_sqlalchemy(cls, sectionID, section_name):
+        """
+        Takes a RowProxy from sqlalchemy and returns an Category object. The argument
+        names are the row names from the sqlalchemy database. These vary slightly
+        from the attributes of the article object.
+        """
+        return cls(sectionID=sectionID, section_name=section_name, categories=[])
+
+@dataclass
 class Category:
     
-    CategoryID: int = id
+    categoryID: int = id
     category_name: str = None
     articles: Any = None
     
@@ -144,7 +173,7 @@ class Category:
         names are the row names from the sqlalchemy database. These vary slightly
         from the attributes of the article object.
         """
-        return cls(CategoryID=categoryID, category_name=category_name, articles=None)
+        return cls(categoryID=categoryID, category_name=category_name, articles=None)
     
     @property
     def name(self):

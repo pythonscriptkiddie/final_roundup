@@ -15,7 +15,7 @@ from sqlalchemy import (MetaData, Table, Column, Integer, Numeric, String,
                         update, and_, or_, not_)
 
 
-from objects import Article, Category
+from objects import Article, Category, Section
 from sqlalchemy.sql import delete, func
 #dal.connection=False
 #from test import testing
@@ -39,8 +39,15 @@ class DataAccessLayer:
         )
     categories_table = Table('Categories', metadata,
         Column('categoryID', Integer(), primary_key=True),
-        Column('category_name', String(50), default=None)
+        Column('category_name', String(50), default=None),
+        Column('section_id', ForeignKey('Sections.sectionID'), default=None)
         )
+    sections_table = Table('Sections', metadata,
+        Column('sectionID', Integer(), primary_key = True),
+        Column('section_name', String(50), default=None)                   
+        )
+    
+    
     
     def db_init(self, conn_string):
         self.engine = create_engine(conn_string or self.conn_string)
@@ -100,6 +107,12 @@ def add_category(category):
     ins = dal.categories_table.insert().values(category_name=category_name)
     result = dal.connection.execute(ins)
     print(result.rowcount)
+    
+def add_section(section):
+    section_name = section.section_name #takes a category object, so we have to get the name
+    ins = dal.sections_table.insert().values(section_name=section_name)
+    result = dal.connection.execute(ins)
+    print(result.rowcount)
 
 #READING SECTION - read/get articles and categories
 
@@ -147,7 +160,6 @@ def get_articles_range(range_low, range_high=None, range_type='article_id'):
                                               category_name = row.category_name,
                                               publication=row.publication)
                                                 for row in rp]
-    #articles_by_id_range = [make_article(row) for row in rp]
     return articles_by_range
 
 def get_articles_by_date(start_date, end_date):
@@ -159,6 +171,12 @@ def get_categories():
     rp = dal.connection.execute(s)
     categories_collection=[Category.from_sqlalchemy(categoryID=i[0], category_name=i[1]) for i in rp]
     return categories_collection
+
+def get_sections():
+    s = select([dal.sections_table.c.sectionID,dal.sections_table.c.section_name])
+    rp = dal.connection.execute(s)
+    sections=[Section.from_sqlalchemy(sectionID=i[0], section_name=i[1]) for i in rp]
+    return sections
     
 def cat_from_snippet(snippet, numeric_snippet=True):
     """
@@ -197,7 +215,6 @@ def get_articles_for_roundup(start_date, end_date, category_id):
              dal.articles_table.c.date <= end_date,dal.categories_table.c.categoryID==category_id))
               #articles_table.c.year == roundup_year,dal.articles_table.c.categoryID == category_id))
     rp = dal.connection.execute(s)
-    #results = rp.fetchall()
     articles_for_roundup = [Article.from_sqlalchemy(articleID=row.articleID, 
                                               name=row.name, date=row.date, 
                                               link=row.link,
@@ -298,6 +315,12 @@ def get_article_count(category_id=None, start_date=None, end_date=None):
     record = rp.first()
     return record.count_1
 
+def get_section_categories(section_id=None):
+    s = select([dal.categories_table]).where(dal.categories_table.c.sectionID == section_id)
+    rp = dal.connection.execute(s)
+    result = rp.fetchall()
+    return result
+
 #UPDATE SECTION - Update articles and categories
 
 def update_article(article_id, new_value, update_type=None):
@@ -334,6 +357,18 @@ def update_category(category_id, new_category_name):
     u = u.values(category_name = new_category_name)
     result = dal.connection.execute(u)
     print(result.rowcount)
+    
+def update_category2(category_id, new_value, update_type):
+    '''Updates the name of a category'''
+    
+    if update_type == 'name':
+        u = update(dal.categories_table).where(dal.categories_table.c.categoryID == category_id)
+        u = u.values(category_name = new_value)
+    if update_type == 'section':
+        u = update(dal.categories_table).where(dal.categories_table.c.categoryID == category_id)
+        u = u.values(sectionID = new_value)
+    result = dal.connection.execute(u)
+    print(result.rowcount)
 
 #DELETE SECTION - Delete articles and categories
     
@@ -342,6 +377,8 @@ def delete_item(item_id, item_type):
         u = delete(dal.articles_table).where(dal.articles_table.c.articleID == item_id)
     elif item_type == 'category':
         u = delete(dal.categories_table).where(dal.categories_table.c.categoryID == item_id)
+    elif item_type == 'section':
+        u = delete(dal.sections_table).where(dal.sections_table.c.section_id == item_id)
     else:
         print('Invalid delete command. Return to main menu.')
     result = dal.connection.execute(u)
